@@ -36,6 +36,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "4a498677-22c5-4a41-a8ca-3fdcc2c436b1"
+      }
+    },
+    "owner": "builtbybennett"
   }
 }
