@@ -1,6 +1,7 @@
 import { useContext, createContext, type PropsWithChildren } from 'react';
 import { useStorageState } from '../hooks/useStorageState';
 import useApi from '../hooks/useApi';
+import { useRouter } from 'expo-router';
 
 export enum UserRoles {
     USER = 'user',
@@ -34,6 +35,7 @@ export function useToken() {
 export function TokenProvider({ children }: PropsWithChildren) {
   const [[isLoading, token], setToken] = useStorageState('token');
   const api = useApi();
+  const router = useRouter();
 
   return (
     <AuthContext.Provider
@@ -43,17 +45,17 @@ export function TokenProvider({ children }: PropsWithChildren) {
             userName,
             password
             }).then((response: any) => {
-              console.log('login response', response);
-            if (response.data?.token) {
-              console.log('setting token');
-              setToken(response.data.token);
-            }
-          }).catch((err: any) => {
-            console.log('failed to login', err);
-          })},
+              if (response.data?.token) {
+                console.log('setting token');
+                setToken(response.data.token);
+                router.replace('./(app)/nameContext');
+              }
+            }).catch((err: any) => {
+              console.log('failed to login', err);
+            })},
         signOut: () => {
-            console.log('wiping token');
           setToken(null);
+          router.replace('../sign-in');
         },
         token,
         isLoading,

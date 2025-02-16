@@ -16,7 +16,6 @@ export default function SignIn() {
   function handleSignIn() {
     if (username && password) {
       signIn(username, password);
-      router.replace('./(app)/nameContext');
     }
   }
 

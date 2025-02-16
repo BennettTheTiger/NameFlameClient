@@ -119,6 +119,12 @@ export default function AppLayout() {
             },
           }}
         />
+        <Drawer.Screen
+          name="sign-out" // This is the name of the page and must match the url from root
+          options={{
+            drawerLabel: 'Sign Out',
+          }}
+        />
       </Drawer>
     </GestureHandlerRootView>
   );
