@@ -21,7 +21,7 @@ export function ThemedText({
     <Text
       style={[
         { color },
-        { fontFamily: 'BricolageGrotesque-Variable'},
+        { fontFamily: 'Bricolage-Grotesque'},
         type === 'default' ? styles.default : undefined,
         type === 'title' ? styles.title : undefined,
         type === 'defaultSemiBold' ? styles.defaultSemiBold : undefined,

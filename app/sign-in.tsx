@@ -24,8 +24,8 @@ export default function SignIn() {
     <ThemedView style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.core.orange }}>
       <View style={styles.container}>
         <ThemedText type="title" style={styles.header} >Sign In</ThemedText>
-        <TextInput placeholder="Username" onChangeText={setUsername} style={styles.inputs} />
-        <TextInput placeholder="Password" secureTextEntry onChangeText={setPassword} style={styles.inputs} />
+        <TextInput autoComplete="username" placeholder="Username" onChangeText={setUsername} style={styles.inputs} />
+        <TextInput autoComplete="password" placeholder="Password" secureTextEntry onChangeText={setPassword} style={styles.inputs} />
         <TouchableOpacity onPress={handleSignIn} disabled={!username || !password} style={styles.buttons}>
           <Text style={styles.buttonText}>Sign In</Text>
         </TouchableOpacity>

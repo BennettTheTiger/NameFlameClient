@@ -41,7 +41,7 @@
       [
         "expo-font",
         {
-          "fonts": ["./assets/fonts/BricolageGrotesque-Variable.ttf"]
+          "fonts": ["./assets/fonts/BricolageGrotesque.ttf"]
         }
       ]
     ],
