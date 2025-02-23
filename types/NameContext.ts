@@ -1,13 +1,13 @@
 type ISODateString = `${number}-${number}-${number}T${number}:${number}:${number}.${number}Z`;
 
-type NameContextUser = {
+export type NameContextUser = {
     id: string,
     userName: string,
     firstName: string,
     lastName: string
 }
 
-type NameContextMatch = {
+export type NameContextMatch = {
     name: string
 }
 

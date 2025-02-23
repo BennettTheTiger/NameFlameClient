@@ -1,11 +1,19 @@
 import { Colors } from '@/constants/Colors';
 import { View, Text, StyleSheet, Button } from 'react-native';
 import { useRouter } from 'expo-router';
+import { NameContextMatch, NameContextUser } from '@/types/NameContext';
 
-type NameContextListItemProps = { id: string, name: string, matches: number, participants: number }
+type NameContextListItemProps = {
+    id: string;
+    name: string;
+    matches: NameContextMatch[];
+    participants: NameContextUser[];
+    updatedAt: string;
+}
 
-export function NameContextListItem({ id, name, matches, participants }: NameContextListItemProps ) {
+export function NameContextListItem({ id, name, matches, participants, updatedAt }: NameContextListItemProps) {
     const router = useRouter();
+    const updatedAtLocalString = new Date(updatedAt).toLocaleString();
   return (
     <View style={styles.container}>
         <View style={{ flexDirection: 'row' }}>
@@ -14,11 +22,15 @@ export function NameContextListItem({ id, name, matches, participants }: NameCon
         </View>
         <View style={{ flexDirection: 'row' }}>
             <Text style={styles.itemTitle}>Matches:</Text>
-            <Text style={styles.itemValue}>{matches}</Text>
+            <Text style={styles.itemValue}>{matches.length}</Text>
         </View>
         <View style={{ flexDirection: 'row' }}>
             <Text style={styles.itemTitle}>Participants:</Text>
-            <Text style={styles.itemValue}>{participants}</Text>
+            <Text style={styles.itemValue}>{participants.length}</Text>
+        </View>
+        <View style={{ flexDirection: 'row' }}>
+            <Text style={styles.itemTitle}>Updated:</Text>
+            <Text style={styles.itemValue}>{updatedAtLocalString}</Text>
         </View>
         <Button title="View" onPress={() => router.push(`/nameContext/${id}`)} color={Colors.core.purple} />
     </View>
