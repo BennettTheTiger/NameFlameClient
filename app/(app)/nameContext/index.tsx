@@ -1,8 +1,10 @@
 import React from 'react';
 import { ScrollView, RefreshControl, ActivityIndicator } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
+import { ThemedText } from '@/components/ThemedText';
 import { NameContextListItem } from '@/components/NameContextListItem';
 import { Colors } from '@/constants/Colors';
+import { useFocusEffect } from '@react-navigation/native';
 
 import { NameContext } from '@/types/NameContext';
 
@@ -25,11 +27,13 @@ export default function NameContextListView() {
       setRefreshing(false);
       alert(err);
     })
-  }
+  };
 
-  React.useEffect(() => {
-    fetchNameContexts();
-  }, [])
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchNameContexts();
+    }, [])
+  );
 
   if (refreshing) {
     return <ThemedView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -37,20 +41,31 @@ export default function NameContextListView() {
     </ThemedView>
   }
 
+  function renderNameContextData() {
+    if (nameContexts.length === 0) {
+      return <ThemedView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ThemedText>No Name Contexts found. Add one to begin!</ThemedText>
+      </ThemedView>
+    }
+
+    return nameContexts.map(nameContext => {
+      return <NameContextListItem
+        key={nameContext.id}
+        id={nameContext.id}
+        name={nameContext.name}
+        matches={nameContext.matches}
+        participants={nameContext.participants}
+        updatedAt={nameContext.updatedAt}
+      />
+    })
+  }
+
   return (
     <ThemedView style={{ flex: 1 }} lightColor={Colors.core.tan} darkColor={Colors.core.black}>
       <ScrollView
         style={{padding: 10}}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={fetchNameContexts}/>}>
-          {nameContexts.map(nameContext => {
-            return <NameContextListItem
-              key={nameContext.id}
-              id={nameContext.id}
-              name={nameContext.name}
-              matches={nameContext.matches.length}
-              participants={nameContext.participants.length}
-            />
-          })}
+          {renderNameContextData()}
       </ScrollView>
     </ThemedView>
   );

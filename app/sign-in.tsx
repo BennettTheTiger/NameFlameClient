@@ -6,6 +6,7 @@ import { ThemedText } from "@/components/ThemedText";
 
 import { useToken } from '../contexts/authCtx';
 import { Colors } from "@/constants/Colors";
+import { MaterialIcons } from "@expo/vector-icons";
 
 export default function SignIn() {
   const { signIn } = useToken();
@@ -22,7 +23,10 @@ export default function SignIn() {
   return (
     <ThemedView style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.core.orange }}>
       <View style={styles.container}>
-        <ThemedText type="title" style={styles.header} >Sign In</ThemedText>
+        <View style={{ alignItems: 'center' }}>
+          <MaterialIcons name="local-fire-department" size={100} color={Colors.core.orange} />
+          <ThemedText type="title" style={styles.header} >Sign In</ThemedText>
+        </View>
         <TextInput autoComplete="username" placeholder="Username" onChangeText={setUsername} style={styles.inputs} />
         <TextInput autoComplete="password" placeholder="Password" secureTextEntry onChangeText={setPassword} style={styles.inputs} />
         <TouchableOpacity onPress={handleSignIn} disabled={!username || !password} style={styles.buttons}>
@@ -61,6 +65,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     backgroundColor: Colors.core.tanLighter,
     borderRadius: 5,
+    fontFamily: 'Bricolage-Grotesque',
   },
   buttons: {
     backgroundColor: Colors.core.purple,
@@ -72,5 +77,6 @@ const styles = StyleSheet.create({
   buttonText: {
     color: Colors.core.white,
     fontSize: 16,
+    fontFamily: 'Bricolage-Grotesque',
   },
 });

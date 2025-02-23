@@ -1,11 +1,12 @@
 import axios from 'axios';
 import { useToken } from '@/contexts/authCtx';
 
+
 export default function useApi() {
-    const { token } = useToken();
+    const { token, signOut } = useToken();
     const api = axios.create({
         baseURL: `${process.env.EXPO_PUBLIC_NAME_FLAME_ENDPOINT}/api/v1`,
-        timeout: 10000,
+        timeout: 30000,
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
@@ -29,6 +30,13 @@ export default function useApi() {
             return response;
         },
         (error) => {
+            if (error.response?.status === 401) {
+                // Handle unauthorized responses
+                if (error.response.data.error?.name === 'TokenExpiredError') {
+                    signOut();
+                    alert('Your session has expired. Please log in again.');
+                }
+            }
             // Handle response errors
             return Promise.reject(error);
         }

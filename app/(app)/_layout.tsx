@@ -8,12 +8,16 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 
 import { useToken } from '../../contexts/authCtx';
+import useApi from '@/hooks/useApi';
+import { useActiveNameContext } from '../../contexts/activeNameContext';
 import { ThemedView } from '@/components/ThemedView';
 
 export default function AppLayout() {
   const { token, isLoading } = useToken();
 
   const router = useRouter();
+  const api = useApi();
+  const activeNameContext = useActiveNameContext();
   const { id } = useLocalSearchParams<{ id: string }>();
 
   // You can keep the splash screen open, or render a loading screen like we do here.
@@ -50,10 +54,23 @@ export default function AppLayout() {
           }}
         />
         <Drawer.Screen
-          name="nameContext/[id]/matches" // This is the name of the page and must match the url from root
+          name="nameContext/[id]/match" // This is the name of the page and must match the url from root
           options={{
-            headerTitle: 'Name Context Matches',
-            drawerItemStyle: { display: 'none' }, // Hide from drawer navigation
+            headerTitle: `${activeNameContext.name} Match`,
+            headerStyle: {
+              backgroundColor: Colors.core.tan, // Set header background color
+            },
+            drawerItemStyle: { display: 'none' },
+            headerRight: () => (
+              <MaterialIcons
+                name="close"
+                size={24}
+                aria-label='Add Name Context'
+                color={Colors.core.orange}
+                onPress={() => router.replace(`/nameContext/${activeNameContext.id}`)}
+                style={{ marginRight: 10 }}
+              />
+            ), // Hide from drawer navigation
           }}
           />
         <Drawer.Screen
@@ -79,33 +96,20 @@ export default function AppLayout() {
         <Drawer.Screen
           name="nameContext/[id]" // This is the name of the page and must match the url from root
           options={{
-            headerTitle: 'Name Context Details',
+            headerTitle: `${activeNameContext.name} Details`,
             headerStyle: {
               backgroundColor: Colors.core.tan, // Set header background color
             },
             drawerItemStyle: { display: 'none' }, // Hide from drawer navigation
-            headerLeft: () => (
+            headerRight: () => (
               <MaterialIcons
-                name="arrow-back"
+                name="close"
                 size={24}
                 aria-label='Back'
                 color={Colors.core.orange}
-                onPress={() => router.back()}
-                style={{ marginLeft: 10 }}
+                onPress={router.back}
+                style={{ marginRight: 10 }}
               />
-            ),
-            headerRight: () => (
-              id === 'new'
-              ? null
-              : (
-                <MaterialIcons
-                  name="delete"
-                  size={24}
-                  aria-label='Add Name Context'
-                  color={Colors.core.orange}
-                  onPress={() => alert('Delete')}
-                  style={{ marginRight: 10 }}
-                />)
             ),
           }}
         />

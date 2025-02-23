@@ -1,15 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Text, View, TextInput, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ThemedView } from '@/components/ThemedView';
 import { Dropdown } from 'react-native-element-dropdown';
 import { Colors } from '@/constants/Colors';
 import useApi from '@/hooks/useApi';
+import { useActiveNameContext } from '@/contexts/activeNameContext';
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function NameContextDetailsView() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
+  const activeNameContext = useActiveNameContext();
   const api = useApi();
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   // form values
   const [nameValue, setNameValue] = useState('');
   const [descriptionValue, setDescriptionValue] = useState('');
@@ -37,6 +42,7 @@ export default function NameContextDetailsView() {
     }
     else {
       resetForm();
+      activeNameContext.resetContext();
       setLoading(false);
     }
   }, [id]);
@@ -49,11 +55,18 @@ export default function NameContextDetailsView() {
       setNameValue(data.name);
       setDescriptionValue(data.description);
       setNounValue(data.noun);
-      setMaxCharacters(data.filter.maxCharacters);
+      setMaxCharacters('');
       setGenderValue(data.gender);
       setLoading(false);
+
+      activeNameContext.setContext({
+        id: data.id,
+        name: data.name,
+        isOwner: data.isOwner
+      })
+
     }).catch((err) => {
-      alert(err);
+      setError(err);
       setLoading(false);
     });
   }
@@ -71,10 +84,23 @@ export default function NameContextDetailsView() {
       participants
     }).then(() => {
       alert('Name context created');
+      router.push('/nameContext');
     }).catch((err) => {
       console.log(err);
       alert('Failed to create name context');
     });
+  }
+
+  function handleDelete() {
+    if (confirm('Are you sure you want to delete this name context?')) {
+      api.delete(`/nameContext/${id}`).then(() => {
+        alert('Name context deleted');
+        router.push('/nameContext');
+      }).catch((err) => {
+        console.log(err);
+        alert('Failed to delete name context');
+      });
+    }
   }
 
   if (loading) {
@@ -86,8 +112,19 @@ export default function NameContextDetailsView() {
   return (
     <ThemedView style={{ flex: 1, alignItems: 'center'}}>
       <View style={styles.container}>
-        <Text style={{...styles.label, textAlign: 'center' }}>Basic Information</Text>
-
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <Text style={{...styles.label, textAlign: 'center' }}>Basic Information</Text>
+          {isExistingNameContxt &&
+            <TouchableOpacity onPress={handleDelete} style={{ padding: 5, backgroundColor: Colors.core.purple, borderRadius: 5 }}>
+              <MaterialIcons name='delete' size={24} color={Colors.core.white} />
+            </TouchableOpacity>}
+            <TouchableOpacity onPress={saveNameContext} style={{ padding: 5, backgroundColor: Colors.core.orange, borderRadius: 5 }}>
+              <MaterialIcons name='save' size={24} color={Colors.core.white} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push(`/nameContext/${id}/match`)} style={{ padding: 5, backgroundColor: Colors.core.orange, borderRadius: 5 }}>
+              <MaterialIcons name='local-fire-department' size={24} color={Colors.core.white} />
+            </TouchableOpacity>
+        </View>
         <Text style={styles.label}>Name</Text>
         <TextInput
           style={styles.input}
@@ -152,9 +189,6 @@ export default function NameContextDetailsView() {
           maxLength={1}
         />
       </View>
-      <TouchableOpacity style={styles.buttons} onPress={saveNameContext}>
-        <Text style={styles.buttonText}>Save</Text>
-      </TouchableOpacity>
     </ThemedView>
   );
 }
