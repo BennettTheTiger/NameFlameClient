@@ -1,15 +1,50 @@
-import { useState, useEffect } from "react";
-import { View, Button, Switch } from 'react-native';
+import { useState } from "react";
+import { View, Button, Switch, Pressable, ActivityIndicator } from 'react-native';
 import { Colors } from '../../../constants/Colors';
 import { ThemedView } from '../../../components/ThemedView';
 import { ThemedText } from '../../../components/ThemedText';
 
-import { useToken } from '../../../contexts/authCtx';
+import { useAuth } from '../../../contexts/authCtx';
+import { useConfirmationContext } from '../../../contexts/confirmationCtx';
+import useApi from '../../../hooks/useApi';
 
 export default function SettingsView() {
-  const { signOut } = useToken();
+  const { signOutUser } = useAuth();
+  const api = useApi();
+  const [loading, setLoading] = useState(false);
 
   const [sendNotifications, setSendNotifications] = useState(true);
+  const { requireConfirmation, resolveModal } = useConfirmationContext();
+
+  function handleAccoundDeletion() {
+    requireConfirmation({
+      message: 'Are you sure you want to delete your account? Deleting your account will remove all of your data including shared name contexts and cannot be undone.',
+      primaryActionTitle: 'Delete Account',
+      primaryAction: async () => {
+        setLoading(true);
+        try {
+          await api.delete('/user');
+          resolveModal();
+          signOutUser();
+        } catch (error) {
+          console.error(error);
+        }
+        setLoading(false);
+      }
+      });
+    }
+
+  if (loading) {
+    return (
+      <ThemedView
+        style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+        darkColor={Colors.core.purple}
+        lightColor={Colors.core.tan}
+      >
+        <ActivityIndicator  size='large' color={Colors.core.orange} />
+      </ThemedView>
+    );
+  }
 
   return (
     <ThemedView
@@ -37,10 +72,14 @@ export default function SettingsView() {
           </ThemedText>
         </View>
         <View style={{ paddingTop: 10 }}>
-          <Button title="Delete Account" color={Colors.core.black}/>
+          <Pressable onPress={handleAccoundDeletion}>
+            <ThemedText lightColor={Colors.core.black} darkColor={Colors.core.black} type='default'>
+              Delete Account
+            </ThemedText>
+          </Pressable>
         </View>
         <View style={{ paddingTop: 10 }}>
-          <Button onPress={signOut} title='Sign Out' color={Colors.core.orange}/>
+          <Button onPress={signOutUser} title='Sign Out' color={Colors.core.orange}/>
         </View>
       </View>
     </ThemedView>

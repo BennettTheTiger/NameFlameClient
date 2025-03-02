@@ -30,8 +30,6 @@ export default function NameContextDetailsMatchs() {
   function fetchNewName() {
     api.get('/name/random').then((resp) => {
       setCurrentName(resp.data);
-    }).catch((err) => {
-      alert(err);
     });
   }
 
@@ -45,9 +43,6 @@ export default function NameContextDetailsMatchs() {
     }).then(() => {
       setSearchValue('');
       fetchNewName();
-    }
-    ).catch((err) => {
-      alert(err);
     });
   }
 

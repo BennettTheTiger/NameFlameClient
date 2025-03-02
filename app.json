@@ -9,6 +9,7 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
+      "googleServicesFile": "./GoogleService-Info.plist",
       "supportsTablet": true,
       "bundleIdentifier": "com.builtbybennett.nameflame",
       "infoPlist": {
@@ -16,6 +17,7 @@
       }
     },
     "android": {
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -41,7 +43,9 @@
       [
         "expo-font",
         {
-          "fonts": ["./assets/fonts/BricolageGrotesque.ttf"]
+          "fonts": [
+            "./assets/fonts/BricolageGrotesque.ttf"
+          ]
         }
       ]
     ],
@@ -56,6 +60,12 @@
         "projectId": "4a498677-22c5-4a41-a8ca-3fdcc2c436b1"
       }
     },
-    "owner": "builtbybennett"
+    "owner": "builtbybennett",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/4a498677-22c5-4a41-a8ca-3fdcc2c436b1"
+    }
   }
 }

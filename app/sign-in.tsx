@@ -1,34 +1,53 @@
 import { useState } from "react";
 import { router } from 'expo-router';
-import { TextInput, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { TextInput, StyleSheet, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 
-import { useToken } from '../contexts/authCtx';
+import { useAuth } from '../contexts/authCtx';
 import { Colors } from "@/constants/Colors";
 import { MaterialIcons } from "@expo/vector-icons";
 
 export default function SignIn() {
-  const { signIn } = useToken();
+  const { signIn, user } = useAuth();
 
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-
-  function handleSignIn() {
-    if (username && password) {
-      signIn(username, password);
-    }
+  if (user) {
+    // Redirect to the home page if the user is already signed in.
+    router.replace('/');
   }
 
-  return (
-    <ThemedView style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.core.orange }}>
-      <View style={styles.container}>
-        <View style={{ alignItems: 'center' }}>
-          <MaterialIcons name="local-fire-department" size={100} color={Colors.core.orange} />
-          <ThemedText type="title" style={styles.header} >Sign In</ThemedText>
+  const [isLoading, setIsLoading] = useState(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
+
+  async function handleSignIn() {
+    setIsLoading(true);
+    setErrorMsg('');
+    try {
+      await signIn(username, password);
+    } catch (e) {
+      setErrorMsg('Invalid Credentials, please try again');
+    }
+    setIsLoading(false);
+  }
+
+  function renderContents() {
+    if (isLoading) {
+      return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.core.orange }}>
+          <View style={styles.container}>
+            <ActivityIndicator size="large" color={Colors.core.orange} />
+          </View>
         </View>
+      );
+    }
+
+    return (
+      <View>
         <TextInput autoComplete="username" placeholder="Username" onChangeText={setUsername} style={styles.inputs} />
         <TextInput autoComplete="password" placeholder="Password" secureTextEntry onChangeText={setPassword} style={styles.inputs} />
+        { errorMsg ? <Text style={{ color: Colors.core.orange, textAlign: 'center' }}>{errorMsg}</Text> : null }
         <TouchableOpacity onPress={handleSignIn} disabled={!username || !password} style={styles.buttons}>
           <Text style={styles.buttonText}>Sign In</Text>
         </TouchableOpacity>
@@ -40,13 +59,26 @@ export default function SignIn() {
           <Text style={styles.buttonText}>Sign Up</Text>
         </TouchableOpacity>
       </View>
+    )
+  }
+
+  return (
+    <ThemedView style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.core.orange }}>
+      <View style={styles.container}>
+        <View style={{ alignItems: 'center' }}>
+          <MaterialIcons name="local-fire-department" size={100} color={Colors.core.orange} />
+          <ThemedText type="title" style={styles.header} >Sign In</ThemedText>
+        </View>
+        {renderContents()}
+      </View>
     </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    padding: 50,
+    padding: 20,
+    minWidth: 300,
     borderRadius: 10,
     backgroundColor: Colors.core.tan,
     shadowColor: Colors.core.black,
