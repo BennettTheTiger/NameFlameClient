@@ -1,8 +1,6 @@
-import { useToken } from '../../contexts/authCtx';
-import { Redirect } from 'expo-router';
+import { useAuth } from '../../contexts/authCtx';
 
 export default function SignOutEmptyView() {
-    const { signOut } = useToken();
-    signOut();
-    return <Redirect href="/" />;
+    const { signOutUser } = useAuth();
+    signOutUser();
 }

@@ -1,66 +1,53 @@
-import { useContext, createContext, type PropsWithChildren } from 'react';
-import { useStorageState } from '../hooks/useStorageState';
-import useApi from '../hooks/useApi';
-import { useRouter } from 'expo-router';
+import { useContext, createContext, useState, useEffect, ReactNode } from 'react';
+import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
+import { auth } from '../firebaseConfig';
+import { User, IdTokenResult } from 'firebase/auth';
 
-export enum UserRoles {
-    USER = 'user',
-    ADMIN = 'admin'
+interface AuthContextType {
+  user: any;
+  token: string;
+  isLoading: boolean;
+  signIn: (email: string, password: string) => Promise<any>;
+  signUp: (email: string, password: string) => Promise<any>;
+  signOutUser: () => Promise<void>;
 }
 
-const AuthContext = createContext<{
-  signIn: (email: string, password: string) => void;
-  signOut: () => void;
-  token?: string | null;
-  isLoading: boolean;
-}>({
-  signIn: () => null,
-  signOut: () => null,
-  token: null,
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  token: '',
   isLoading: false,
+  signIn: async () => {},
+  signUp: async () => {},
+  signOutUser: async () => {},
 });
 
-// This hook can be used to access the user info.
-export function useToken() {
-  const value = useContext(AuthContext);
-  if (process.env.NODE_ENV !== 'production') {
-    if (!value) {
-      throw new Error('useToken must be wrapped in a <TokenProvider />');
-    }
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setUser(user);
+      const userToken = await user?.getIdToken();
+      setToken(userToken || '');
+    });
+    return unsubscribe;
+  }, []);
+
+  const signIn = async (email: string, password: string) => {
+    setIsLoading(true);
+    await signInWithEmailAndPassword(auth, email, password);
+    setIsLoading(false);
   }
-
-  return value;
-}
-
-export function TokenProvider({ children }: PropsWithChildren) {
-  const [[isLoading, token], setToken] = useStorageState('token');
-  const api = useApi();
-  const router = useRouter();
+  const signUp = (email: string, password: string) => createUserWithEmailAndPassword(auth, email, password);
+  const signOutUser = () => signOut(auth);
 
   return (
-    <AuthContext.Provider
-      value={{
-        signIn: (userName, password) => {
-          api.post('/auth/login', {
-            userName,
-            password
-            }).then((response: any) => {
-              if (response.data?.token) {
-                console.log('setting token');
-                setToken(response.data.token);
-                router.replace('./(app)/nameContext');
-              }
-            }).catch((err: any) => {
-              console.log('failed to login', err);
-            })},
-        signOut: () => {
-          setToken(null);
-          router.replace('../sign-in');
-        },
-        token,
-        isLoading,
-      }}>
+    <AuthContext.Provider value={{ user, signIn, signUp, signOutUser, isLoading, token }}>
       {children}
     </AuthContext.Provider>
   );
-}
+};
+
+export const useAuth = () => useContext(AuthContext);

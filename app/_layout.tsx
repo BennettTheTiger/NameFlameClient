@@ -1,14 +1,23 @@
 import { Slot } from 'expo-router';
-import { TokenProvider } from '../contexts/authCtx';
+import { AuthProvider } from '../contexts/authCtx';
 import { ActiveNameProvider } from '../contexts/activeNameContext';
+import { ErrorProvider } from '@/contexts/errorCtx';
+import { ConfirmationProvider } from '@/contexts/confirmationCtx';
+import { ErrorModal } from '@/components/ErrorModal';
+import { ConfirmationModal } from '@/components/ConfirmationModal';
 
 export default function Root() {
-  // Set up the auth context and render our layout inside of it.
   return (
-    <TokenProvider>
-      <ActiveNameProvider>
-        <Slot />
-      </ActiveNameProvider>
-    </TokenProvider>
+    <ErrorProvider>
+      <ConfirmationProvider>
+        <AuthProvider>
+          <ActiveNameProvider>
+            <ErrorModal />
+            <ConfirmationModal />
+            <Slot />
+          </ActiveNameProvider>
+        </AuthProvider>
+      </ConfirmationProvider>
+    </ErrorProvider>
   );
 }

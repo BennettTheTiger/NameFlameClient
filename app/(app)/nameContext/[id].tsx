@@ -6,15 +6,19 @@ import { Dropdown } from 'react-native-element-dropdown';
 import { Colors } from '@/constants/Colors';
 import useApi from '@/hooks/useApi';
 import { useActiveNameContext } from '@/contexts/activeNameContext';
+import { useConfirmationContext } from '@/contexts/confirmationCtx';
+import { useErrorContext } from '@/contexts/errorCtx';
 import { MaterialIcons } from '@expo/vector-icons';
 
 export default function NameContextDetailsView() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const activeNameContext = useActiveNameContext();
+  const { requireConfirmation } = useConfirmationContext();
+  const { addApiError } = useErrorContext();
   const api = useApi();
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<any>({});
   // form values
   const [nameValue, setNameValue] = useState('');
   const [descriptionValue, setDescriptionValue] = useState('');
@@ -66,12 +70,14 @@ export default function NameContextDetailsView() {
       })
 
     }).catch((err) => {
-      setError(err);
+      addApiError(err);
+    }).finally(() => {
       setLoading(false);
     });
   }
 
   function saveNameContext() {
+    setLoading(true);
     api.post('/nameContext', {
       name: nameValue,
       description: descriptionValue,
@@ -83,24 +89,28 @@ export default function NameContextDetailsView() {
       },
       participants
     }).then(() => {
-      alert('Name context created');
       router.push('/nameContext');
     }).catch((err) => {
-      console.log(err);
-      alert('Failed to create name context');
+        if (err.response?.status === 500) {
+          addApiError(err);
+        }
+        else {
+          setError(err.response?.data?.error || {});
+        }
+    }).finally(() => {
+      setLoading(false);
     });
   }
 
   function handleDelete() {
-    if (confirm('Are you sure you want to delete this name context?')) {
+      setLoading(true);
       api.delete(`/nameContext/${id}`).then(() => {
-        alert('Name context deleted');
         router.push('/nameContext');
       }).catch((err) => {
-        console.log(err);
-        alert('Failed to delete name context');
+        addApiError(err);
+      }).finally(() => {
+        setLoading(false);
       });
-    }
   }
 
   if (loading) {
@@ -115,15 +125,23 @@ export default function NameContextDetailsView() {
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <Text style={{...styles.label, textAlign: 'center' }}>Basic Information</Text>
           {isExistingNameContxt &&
-            <TouchableOpacity onPress={handleDelete} style={{ padding: 5, backgroundColor: Colors.core.purple, borderRadius: 5 }}>
+            <TouchableOpacity onPress={() => {
+              requireConfirmation({
+                primaryActionTitle: 'Delete Name Context',
+                primaryAction: handleDelete,
+                message: 'Are you sure you want to delete this name context?'
+              });
+            }} style={{ padding: 5, backgroundColor: Colors.core.purple, borderRadius: 5 }}>
               <MaterialIcons name='delete' size={24} color={Colors.core.white} />
             </TouchableOpacity>}
             <TouchableOpacity onPress={saveNameContext} style={{ padding: 5, backgroundColor: Colors.core.orange, borderRadius: 5 }}>
               <MaterialIcons name='save' size={24} color={Colors.core.white} />
             </TouchableOpacity>
+          {isExistingNameContxt &&
             <TouchableOpacity onPress={() => router.push(`/nameContext/${id}/match`)} style={{ padding: 5, backgroundColor: Colors.core.orange, borderRadius: 5 }}>
               <MaterialIcons name='local-fire-department' size={24} color={Colors.core.white} />
             </TouchableOpacity>
+          }
         </View>
         <Text style={styles.label}>Name</Text>
         <TextInput
@@ -135,6 +153,7 @@ export default function NameContextDetailsView() {
           value={nameValue}
           onChangeText={setNameValue}
         />
+        {error.name?.message ? <Text style={styles.errorText}>{error.name?.message}</Text> : null}
 
         <Text style={styles.label}>Description</Text>
         <TextInput
@@ -145,6 +164,7 @@ export default function NameContextDetailsView() {
           value={descriptionValue}
           onChangeText={setDescriptionValue}
         />
+        {error.description?.message ? <Text style={styles.errorText}>{error.description?.message}</Text> : null}
 
         <Text style={styles.label}>Noun</Text>
         <TextInput
@@ -154,6 +174,7 @@ export default function NameContextDetailsView() {
           value={nounValue}
           onChangeText={setNounValue}
         />
+        {error.noun?.message ? <Text style={styles.errorText}>{error.noun?.message}</Text> : null}
 
         <Text style={styles.label}>Max Characters</Text>
         <TextInput
@@ -163,6 +184,7 @@ export default function NameContextDetailsView() {
           value={maxCharacters}
           onChangeText={setMaxCharacters}
         />
+        {error.maxCharacters?.message ? <Text style={styles.errorText}>{error.maxCharacters?.message}</Text> : null}
 
         <Text style={styles.label}>Gender</Text>
         <Dropdown
@@ -180,6 +202,7 @@ export default function NameContextDetailsView() {
             setGenderValue(item.value);
           }}
         />
+        {error.gender?.message ? <Text style={styles.errorText}>{error.gender.message}</Text> : null}
 
         <Text style={styles.label}>Starts with the letter</Text>
         <TextInput
@@ -188,6 +211,7 @@ export default function NameContextDetailsView() {
           onChangeText={(value)=> setStartsWithValue(String(value).toUpperCase())}
           maxLength={1}
         />
+        {error.startsWithLetter?.message ? <Text style={styles.errorText}>{error.startsWithLetter?.message}</Text> : null}
       </View>
     </ThemedView>
   );
@@ -254,5 +278,9 @@ const styles = StyleSheet.create({
   buttonText: {
     color: Colors.core.white,
     fontSize: 16,
+  },
+  errorText: {
+    color: Colors.core.orange,
+    fontSize: 12,
   },
 });

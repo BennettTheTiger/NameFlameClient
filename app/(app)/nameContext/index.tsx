@@ -21,11 +21,9 @@ export default function NameContextListView() {
     setRefreshing(true);
     api.get('/nameContexts').then((resp) => {
       setNameContexts(resp.data);
-      console.log(resp);
       setRefreshing(false);
     }).catch((err) => {
       setRefreshing(false);
-      alert(err);
     })
   };
 

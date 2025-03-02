@@ -7,13 +7,13 @@ import { Colors } from '../../constants/Colors';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 
-import { useToken } from '../../contexts/authCtx';
+import { useAuth } from '../../contexts/authCtx';
 import useApi from '@/hooks/useApi';
 import { useActiveNameContext } from '../../contexts/activeNameContext';
 import { ThemedView } from '@/components/ThemedView';
 
 export default function AppLayout() {
-  const { token, isLoading } = useToken();
+  const { user, isLoading } = useAuth();
 
   const router = useRouter();
   const api = useApi();
@@ -29,7 +29,7 @@ export default function AppLayout() {
 
   // Only require authentication within the (app) group's layout as users
   // need to be able to access the (auth) group and sign in again.
-  if (!token) {
+  if (!user) {
     // On web, static rendering will stop here as the user is not authenticated
     // in the headless Node process that the pages are rendered in.
     return <Redirect href="../sign-in" />;
