@@ -66,7 +66,8 @@ export default function NameContextDetailsView() {
       activeNameContext.setContext({
         id: data.id,
         name: data.name,
-        isOwner: data.isOwner
+        isOwner: data.isOwner,
+        likedNames: data.likedNames || []
       })
 
     }).catch((err) => {
@@ -137,6 +138,11 @@ export default function NameContextDetailsView() {
             <TouchableOpacity onPress={saveNameContext} style={{ padding: 5, backgroundColor: Colors.core.orange, borderRadius: 5 }}>
               <MaterialIcons name='save' size={24} color={Colors.core.white} />
             </TouchableOpacity>
+          {isExistingNameContxt &&
+            <TouchableOpacity onPress={() => router.push(`/nameContext/${id}/favorites`)} style={{ padding: 5, backgroundColor: Colors.core.orange, borderRadius: 5 }}>
+              <MaterialIcons name='star' size={24} color={Colors.core.white} />
+            </TouchableOpacity>
+          }
           {isExistingNameContxt &&
             <TouchableOpacity onPress={() => router.push(`/nameContext/${id}/match`)} style={{ padding: 5, backgroundColor: Colors.core.orange, borderRadius: 5 }}>
               <MaterialIcons name='local-fire-department' size={24} color={Colors.core.white} />

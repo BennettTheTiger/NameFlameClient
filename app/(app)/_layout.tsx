@@ -5,10 +5,9 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Drawer } from 'expo-router/drawer';
 import { Colors } from '../../constants/Colors';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter } from 'expo-router';
 
 import { useAuth } from '../../contexts/authCtx';
-import useApi from '@/hooks/useApi';
 import { useActiveNameContext } from '../../contexts/activeNameContext';
 import { ThemedView } from '@/components/ThemedView';
 
@@ -16,9 +15,7 @@ export default function AppLayout() {
   const { user, isLoading } = useAuth();
 
   const router = useRouter();
-  const api = useApi();
   const activeNameContext = useActiveNameContext();
-  const { id } = useLocalSearchParams<{ id: string }>();
 
   // You can keep the splash screen open, or render a loading screen like we do here.
   if (isLoading) {
@@ -73,6 +70,26 @@ export default function AppLayout() {
             ), // Hide from drawer navigation
           }}
           />
+        <Drawer.Screen
+          name="nameContext/[id]/favorites" // This is the name of the page and must match the url from root
+          options={{
+            headerTitle: `${activeNameContext.name} Favorites`,
+            headerStyle: {
+              backgroundColor: Colors.core.tan, // Set header background color
+            },
+            drawerItemStyle: { display: 'none' },
+            headerRight: () => (
+              <MaterialIcons
+                name="close"
+                size={24}
+                aria-label='Add Name Context'
+                color={Colors.core.orange}
+                onPress={() => router.replace(`/nameContext/${activeNameContext.id}`)}
+                style={{ marginRight: 10 }}
+              />
+            ), // Hide from drawer navigation
+          }}
+        />
         <Drawer.Screen
           name="nameContext/index" // This is the name of the page and must match the url from root
           options={{
