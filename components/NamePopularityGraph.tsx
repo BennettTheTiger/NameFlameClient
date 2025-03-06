@@ -14,7 +14,7 @@ type PopularityForYear = {
 
 type NamePopularityProps = {
   popularity: PopularityForYear;
-  gender: 'male' | 'female';
+  gender: 'male' | 'female' | 'neutral';
 };
 
 export function NamePopularityGraph(props: NamePopularityProps) {

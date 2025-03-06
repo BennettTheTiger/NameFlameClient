@@ -5,10 +5,17 @@ import { ThemedText } from '@/components/ThemedText';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import useApi from '@/hooks/useApi';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { NamePopularityGraph } from '@/components/NamePopularityGraph';
 import { useErrorContext } from '@/contexts/errorCtx';
 import { useActiveNameContext } from '@/contexts/activeNameContext';
+
+type NameItem = {
+  name: string;
+  description: string;
+  popularity: any;
+  gender: 'male' | 'female' | 'neutral'
+};
 
 export default function NameContextDetailsMatchs() {
   const api = useApi();
@@ -19,27 +26,47 @@ export default function NameContextDetailsMatchs() {
   const { setContext } = useActiveNameContext();
 
   const [searchValue, setSearchValue] = useState('');
-  const [currentName, setCurrentName] = useState<{ name: string; description: string; popularity: {}; gender: 'male' | 'female' }>({ name: '', description: '', popularity: {}, gender: 'male' });
+  const [names, setNames] = useState<NameItem[]>([]);
+  const [currentName, setCurrentName] = useState<NameItem>({ name: '', description: '', popularity: {}, gender: 'neutral' });
 
   function searchForName(name: string) {
     setLoading(true);
-    api.get(`/name/${name}`).then((resp) => {
+    api.get(`/name/${name}`, ).then((resp) => {
       setCurrentName(resp.data);
     }).catch((err) => {
-      console.log(err);
+     addApiError(err);
     });
     setLoading(false);
   }
 
-  function fetchNewName() {
-    api.get('/name/random').then((resp) => {
-      setCurrentName(resp.data);
+  function fetchNames() {
+    setLoading(true);
+    api.get(`/nameContext/${id}/nextNames`, {
+      params: {
+        limit: 10,
+      }
+    }).then((resp) => {
+      setCurrentName(resp.data[0]);
+      setNames(resp.data.slice(1));
+    }).catch((err) => {
+      addApiError(err);
+    }).finally(() => {
+      setLoading(false);
     });
   }
 
-  useEffect(() => {
-    fetchNewName();
-  }, []);
+  function nextName() {
+    if (names.length > 1) {
+      const newName = names.shift();
+      if (newName) {
+        setCurrentName(newName);
+      }
+      setNames(names);
+    }
+    else fetchNames();
+  }
+
+  useEffect(() => fetchNames(), []);
 
   function handleLikeName() {
     setLoading(true);
@@ -48,7 +75,7 @@ export default function NameContextDetailsMatchs() {
     }).then((resp) => {
       setSearchValue('');
       setContext(resp.data);
-      fetchNewName();
+      nextName();
     }).catch((err) => {
       addApiError(err);
     }).finally(() => {
@@ -112,7 +139,7 @@ export default function NameContextDetailsMatchs() {
       <View style={styles.buttonContainer}>
         { !disableDislike && <TouchableOpacity
           style={[styles.buttons, { backgroundColor: Colors.core.purple }]}
-          onPress={fetchNewName}
+          onPress={nextName}
         >
           <MaterialIcons name="cancel" size={24} color={Colors.core.white} />
         </TouchableOpacity> }
