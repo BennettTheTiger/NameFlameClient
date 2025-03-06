@@ -1,14 +1,16 @@
-import {useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { View, ScrollView, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import useApi from '@/hooks/useApi';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
+import { useConfirmationContext } from '@/contexts/confirmationCtx';
 import { NamePopularityGraph } from '@/components/NamePopularityGraph';
 import { useErrorContext } from '@/contexts/errorCtx';
 import { useActiveNameContext } from '@/contexts/activeNameContext';
+
 
 type NameItem = {
   name: string;
@@ -21,6 +23,8 @@ export default function NameContextDetailsMatchs() {
   const api = useApi();
 
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
+  const { requireConfirmation } = useConfirmationContext();
   const [isLoading, setLoading] = useState(false);
   const { addApiError } = useErrorContext();
   const { setContext } = useActiveNameContext();
@@ -43,9 +47,17 @@ export default function NameContextDetailsMatchs() {
     setLoading(true);
     api.get(`/nameContext/${id}/nextNames`, {
       params: {
-        limit: 10,
+        limit: 25,
       }
     }).then((resp) => {
+      if (resp.data.length === 0) {
+        requireConfirmation({
+          message: 'No more names to match! Check the filters to see if there are more names to match.',
+          primaryActionTitle: 'Return to Name Context',
+          primaryAction: () => router.replace(`/nameContext/${id}`),
+        });
+        return;
+      }
       setCurrentName(resp.data[0]);
       setNames(resp.data.slice(1));
     }).catch((err) => {
@@ -66,7 +78,7 @@ export default function NameContextDetailsMatchs() {
     else fetchNames();
   }
 
-  useEffect(() => fetchNames(), []);
+  useFocusEffect(useCallback(fetchNames, [id]));
 
   function handleLikeName() {
     setLoading(true);

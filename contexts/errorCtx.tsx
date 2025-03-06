@@ -32,7 +32,6 @@ export const ErrorProvider: React.FC<ErrorProviderProps> = ({ children }) => {
   const hasErrors = apiErrors.length > 0;
 
   const addApiError = (error: AxiosError<ErrorResponseData>) => {
-      console.log(error);
       const newApiErr = {
           message: error.response?.data?.message || error.message || 'something went wrong',
           status: error.response?.status,
