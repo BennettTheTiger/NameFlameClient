@@ -4,6 +4,7 @@ type ActiveNameContextType = {
   id: string;
   name: string;
   isOwner: boolean;
+  likedNames: string[];
   setContext: (context: Partial<ActiveNameContextType>) => void;
   resetContext: () => void;
 };
@@ -12,15 +13,19 @@ const ActiveNameContext = createContext<ActiveNameContextType>({
   id: '',
   name: '',
   isOwner: false,
+  likedNames: [],
   setContext: () => {},
   resetContext: () => {},
 });
 
 export const ActiveNameProvider = ({ children }: PropsWithChildren<{}>) => {
-  const [context, setContextState] = useState({
+  const [context, setContextState] = useState<ActiveNameContextType>({
     id: '',
     name: '',
+    likedNames: [],
     isOwner: false,
+    setContext: () => {},
+    resetContext: () => {},
   });
 
   const setContext = (newContext: Partial<ActiveNameContextType>) => {
@@ -31,11 +36,14 @@ export const ActiveNameProvider = ({ children }: PropsWithChildren<{}>) => {
   };
 
   const resetContext = () => {
-    setContextState({
+    setContextState((prevContext) => ({
       id: '',
       name: '',
+      likedNames: [],
       isOwner: false,
-    });
+      setContext: prevContext.setContext,
+      resetContext: prevContext.resetContext,
+    }));
   };
 
   return (

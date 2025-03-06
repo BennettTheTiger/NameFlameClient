@@ -7,12 +7,16 @@ import { Colors } from '@/constants/Colors';
 import useApi from '@/hooks/useApi';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { NamePopularityGraph } from '@/components/NamePopularityGraph';
+import { useErrorContext } from '@/contexts/errorCtx';
+import { useActiveNameContext } from '@/contexts/activeNameContext';
 
 export default function NameContextDetailsMatchs() {
   const api = useApi();
-  const router = useRouter();
+
   const { id } = useLocalSearchParams<{ id: string }>();
   const [isLoading, setLoading] = useState(false);
+  const { addApiError } = useErrorContext();
+  const { setContext } = useActiveNameContext();
 
   const [searchValue, setSearchValue] = useState('');
   const [currentName, setCurrentName] = useState<{ name: string; description: string; popularity: {}; gender: 'male' | 'female' }>({ name: '', description: '', popularity: {}, gender: 'male' });
@@ -38,11 +42,17 @@ export default function NameContextDetailsMatchs() {
   }, []);
 
   function handleLikeName() {
+    setLoading(true);
     api.patch(`/nameContext/${id}/match`, {
       name: currentName.name,
-    }).then(() => {
+    }).then((resp) => {
       setSearchValue('');
+      setContext(resp.data);
       fetchNewName();
+    }).catch((err) => {
+      addApiError(err);
+    }).finally(() => {
+      setLoading(false);
     });
   }
 

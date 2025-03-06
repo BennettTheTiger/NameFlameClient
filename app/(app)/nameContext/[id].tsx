@@ -66,9 +66,28 @@ export default function NameContextDetailsView() {
       activeNameContext.setContext({
         id: data.id,
         name: data.name,
-        isOwner: data.isOwner
+        isOwner: data.isOwner,
+        likedNames: data.likedNames || []
       })
 
+    }).catch((err) => addApiError(err))
+    .finally(() => setLoading(false));
+  }
+
+  function updateNameContext() {
+    setLoading(true);
+    api.patch(`/nameContext/${id}`, {
+      name: nameValue,
+      description: descriptionValue,
+      noun: nounValue,
+      filter: {
+        gender: genderValue,
+        maxCharacters,
+        startsWithLetter: startsWithValue
+      },
+      participants
+    }).then((resp) => {
+      activeNameContext.setContext(resp.data);
     }).catch((err) => {
       addApiError(err);
     }).finally(() => {
@@ -134,9 +153,14 @@ export default function NameContextDetailsView() {
             }} style={{ padding: 5, backgroundColor: Colors.core.purple, borderRadius: 5 }}>
               <MaterialIcons name='delete' size={24} color={Colors.core.white} />
             </TouchableOpacity>}
-            <TouchableOpacity onPress={saveNameContext} style={{ padding: 5, backgroundColor: Colors.core.orange, borderRadius: 5 }}>
+            <TouchableOpacity onPress={ isExistingNameContxt ? updateNameContext : saveNameContext} style={{ padding: 5, backgroundColor: Colors.core.orange, borderRadius: 5 }}>
               <MaterialIcons name='save' size={24} color={Colors.core.white} />
             </TouchableOpacity>
+          {isExistingNameContxt &&
+            <TouchableOpacity onPress={() => router.push(`/nameContext/${id}/favorites`)} style={{ padding: 5, backgroundColor: Colors.core.orange, borderRadius: 5 }}>
+              <MaterialIcons name='star' size={24} color={Colors.core.white} />
+            </TouchableOpacity>
+          }
           {isExistingNameContxt &&
             <TouchableOpacity onPress={() => router.push(`/nameContext/${id}/match`)} style={{ padding: 5, backgroundColor: Colors.core.orange, borderRadius: 5 }}>
               <MaterialIcons name='local-fire-department' size={24} color={Colors.core.white} />
@@ -148,7 +172,6 @@ export default function NameContextDetailsView() {
           style={styles.input}
           placeholder='How will you identify this name context?'
           maxLength={126}
-          readOnly={isExistingNameContxt}
           autoCapitalize='words'
           value={nameValue}
           onChangeText={setNameValue}
