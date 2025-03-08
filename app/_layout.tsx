@@ -5,6 +5,7 @@ import { ErrorProvider } from '@/contexts/errorCtx';
 import { ConfirmationProvider } from '@/contexts/confirmationCtx';
 import { ErrorModal } from '@/components/ErrorModal';
 import { ConfirmationModal } from '@/components/ConfirmationModal';
+import { StatusBar } from 'expo-status-bar';
 
 export default function Root() {
   return (
@@ -14,6 +15,7 @@ export default function Root() {
           <ActiveNameProvider>
             <ErrorModal />
             <ConfirmationModal />
+            <StatusBar style="dark" />
             <Slot />
           </ActiveNameProvider>
         </AuthProvider>

@@ -1,45 +1,98 @@
-import {useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { View, ScrollView, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import useApi from '@/hooks/useApi';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
+import { useConfirmationContext } from '@/contexts/confirmationCtx';
 import { NamePopularityGraph } from '@/components/NamePopularityGraph';
 import { useErrorContext } from '@/contexts/errorCtx';
 import { useActiveNameContext } from '@/contexts/activeNameContext';
+
+
+type NameItem = {
+  name: string;
+  about: string;
+  usage: string[];
+  popularity: any;
+  meaning: string;
+  origin: string;
+  pronunciation: string;
+  gender: 'male' | 'female' | 'neutral'
+};
 
 export default function NameContextDetailsMatchs() {
   const api = useApi();
 
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
+  const { requireConfirmation } = useConfirmationContext();
   const [isLoading, setLoading] = useState(false);
   const { addApiError } = useErrorContext();
   const { setContext } = useActiveNameContext();
 
   const [searchValue, setSearchValue] = useState('');
-  const [currentName, setCurrentName] = useState<{ name: string; description: string; popularity: {}; gender: 'male' | 'female' }>({ name: '', description: '', popularity: {}, gender: 'male' });
+  const [nameDescription, setNameDescription] = useState('Description Unavailable');
+  const [names, setNames] = useState<NameItem[]>([]);
+  const [currentName, setCurrentName] = useState<NameItem>({
+    name: '',
+    about: '',
+    popularity: {},
+    gender: 'neutral',
+    usage: [],
+    origin: '',
+    pronunciation: '',
+    meaning: ''
+  });
 
   function searchForName(name: string) {
     setLoading(true);
-    api.get(`/name/${name}`).then((resp) => {
+    api.get(`/name/${name}`, ).then((resp) => {
       setCurrentName(resp.data);
     }).catch((err) => {
-      console.log(err);
+     addApiError(err);
     });
     setLoading(false);
   }
 
-  function fetchNewName() {
-    api.get('/name/random').then((resp) => {
-      setCurrentName(resp.data);
+  function fetchNames() {
+    setLoading(true);
+    api.get(`/nameContext/${id}/nextNames`, {
+      params: {
+        limit: 25,
+      }
+    }).then((resp) => {
+      if (resp.data.length === 0) {
+        requireConfirmation({
+          message: 'No more names to match! Check the filters to see if there are more names to match.',
+          primaryActionTitle: 'Return to Name Context',
+          primaryAction: () => router.replace(`/nameContext/${id}`),
+        });
+        return;
+      }
+      setCurrentName(resp.data[0]);
+      setNames(resp.data.slice(1));
+    }).catch((err) => {
+      addApiError(err);
+    }).finally(() => {
+      setLoading(false);
     });
   }
 
-  useEffect(() => {
-    fetchNewName();
-  }, []);
+  function nextName() {
+    if (names.length > 1) {
+      const newName = names.shift();
+      if (newName) {
+        setCurrentName(newName);
+      }
+      setNames(names);
+    }
+    else fetchNames();
+  }
+
+  useFocusEffect(useCallback(fetchNames, [id]));
 
   function handleLikeName() {
     setLoading(true);
@@ -48,7 +101,7 @@ export default function NameContextDetailsMatchs() {
     }).then((resp) => {
       setSearchValue('');
       setContext(resp.data);
-      fetchNewName();
+      nextName();
     }).catch((err) => {
       addApiError(err);
     }).finally(() => {
@@ -58,11 +111,16 @@ export default function NameContextDetailsMatchs() {
 
   const disableDislike = searchValue.length > 0;
 
+  function capitalizeFirstLetter(string: string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
+
   return (
     <ThemedView style={{ flex: 1, alignItems: 'center', padding: 10 }}>
       <View style={{ flexDirection: 'row', width: '100%', justifyContent: 'center', alignItems: 'center' }}>
         <TextInput
           placeholder='Search for a name'
+          placeholderTextColor={Colors.core.black}
           style={{
             padding: 10,
             borderRadius: 5,
@@ -90,17 +148,28 @@ export default function NameContextDetailsMatchs() {
         }}>
         <View style={{ display: 'flex', alignItems: 'center' }}>
           <ThemedText type='title' darkColor={Colors.core.black}>{currentName.name}</ThemedText>
+          <ThemedText type='subtitle' darkColor={Colors.core.black}>{currentName.pronunciation}</ThemedText>
         </View>
         <View style={styles.rowDivider} />
         <ScrollView>
           <View>
             <ThemedText type='subtitle' darkColor={Colors.core.black}>Description:</ThemedText>
-            <ThemedText type='default' darkColor={Colors.core.black}>Here is where some info about the name will go</ThemedText>
+            <ThemedText type='default' darkColor={Colors.core.black}>{currentName.about || "No information available."}</ThemedText>
           </View>
           <View style={styles.rowDivider} />
-          <View style={{ flexDirection: 'row' }}>
+          <View style={styles.supportingText}>
+            <ThemedText type='subtitle' darkColor={Colors.core.black}>Origin:</ThemedText>
+            <ThemedText type='default' style={styles.supportingValue} darkColor={Colors.core.black}>{currentName.origin || 'Unknown'}</ThemedText>
+          </View>
+          <View style={styles.rowDivider} />
+          <View style={styles.supportingText}>
+            <ThemedText type='subtitle' darkColor={Colors.core.black}>Usages:</ThemedText>
+            <ThemedText type='default'  style={styles.supportingValue} darkColor={Colors.core.black}>{currentName.usage.length > 0 ? currentName.usage.map(name => name).join(', ') : 'Unknown'}</ThemedText>
+          </View>
+          <View style={styles.rowDivider} />
+          <View style={styles.supportingText}>
             <ThemedText type='subtitle' darkColor={Colors.core.black}>Primary Gender:</ThemedText>
-            <ThemedText type='default' darkColor={Colors.core.black}>{currentName.gender}</ThemedText>
+            <ThemedText type='default'  style={styles.supportingValue} darkColor={Colors.core.black}>{capitalizeFirstLetter(currentName.gender)}</ThemedText>
           </View>
           <View style={styles.rowDivider} />
           <View>
@@ -112,7 +181,7 @@ export default function NameContextDetailsMatchs() {
       <View style={styles.buttonContainer}>
         { !disableDislike && <TouchableOpacity
           style={[styles.buttons, { backgroundColor: Colors.core.purple }]}
-          onPress={fetchNewName}
+          onPress={nextName}
         >
           <MaterialIcons name="cancel" size={24} color={Colors.core.white} />
         </TouchableOpacity> }
@@ -138,6 +207,15 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.core.tan,
     borderRadius: 2,
     marginVertical: 10,
+  },
+  supportingText: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    verticalAlign: 'middle',
+  },
+  supportingValue: {
+    marginLeft: 5,
+    verticalAlign: 'bottom'
   },
   buttons: {
     flex: 1,

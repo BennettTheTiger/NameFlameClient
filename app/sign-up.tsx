@@ -48,10 +48,10 @@ export default function SignUpView() {
 
         return  (
             <View>
-                <TextInput placeholder="Username" onChangeText={setEmail} style={styles.inputs}/>
-                <TextInput placeholder="Email" onChangeText={setEmail} style={styles.inputs}/>
-                <TextInput placeholder="Password" secureTextEntry onChangeText={setPassword} style={styles.inputs}/>
-                <TextInput placeholder="ConfirmPassword" secureTextEntry onChangeText={setPasswordConfirm} style={styles.inputs}/>
+                <TextInput placeholderTextColor={Colors.core.black} placeholder="Username" autoFocus onChangeText={setEmail} style={styles.inputs}/>
+                <TextInput placeholderTextColor={Colors.core.black} placeholder="Email" onChangeText={setEmail} style={styles.inputs}/>
+                <TextInput placeholderTextColor={Colors.core.black} placeholder="Password" secureTextEntry onChangeText={setPassword} style={styles.inputs}/>
+                <TextInput placeholderTextColor={Colors.core.black} placeholder="ConfirmPassword" secureTextEntry onChangeText={setPasswordConfirm} style={styles.inputs}/>
                 <TouchableOpacity onPress={handleSignUp}>
                     <ThemedText style={styles.buttons}>Sign Up</ThemedText>
                 </TouchableOpacity>

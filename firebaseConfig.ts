@@ -1,14 +1,24 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
+import {
+    FIREBASE_API_KEY,
+    FIREBASE_AUTH_DOMAIN,
+    FIREBASE_PROJECT_ID,
+    FIREBASE_STORAGE_BUCKET,
+    FIREBASE_MESSAGING_SENDER_ID,
+    FIREBASE_APP_ID,
+    FIREBASE_MEASUREMENT_ID
+  // eslint-disable-next-line import/no-unresolved
+  } from '@env'; // this comes from the .env file and is configured in babel.config.js
 
 const firebaseConfig = {
-    apiKey: "AIzaSyAvw5oa9seT9XMoFu7Oysx_PWEVin2wgiA",
-    authDomain: "nameflame.firebaseapp.com",
-    projectId: "nameflame",
-    storageBucket: "nameflame.firebasestorage.app",
-    messagingSenderId: "1090437595615",
-    appId: "1:1090437595615:web:545e0ca29ed57291adc46a",
-    measurementId: "G-LGBKR79HPS"
+    apiKey: FIREBASE_API_KEY,
+    authDomain: FIREBASE_AUTH_DOMAIN,
+    projectId: FIREBASE_PROJECT_ID,
+    storageBucket: FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: FIREBASE_MESSAGING_SENDER_ID,
+    appId: FIREBASE_APP_ID,
+    measurementId: FIREBASE_MEASUREMENT_ID
 };
 
 const app = initializeApp(firebaseConfig);

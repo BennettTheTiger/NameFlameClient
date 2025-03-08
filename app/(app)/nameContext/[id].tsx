@@ -59,8 +59,9 @@ export default function NameContextDetailsView() {
       setNameValue(data.name);
       setDescriptionValue(data.description);
       setNounValue(data.noun);
-      setMaxCharacters('');
-      setGenderValue(data.gender);
+      setMaxCharacters(data.filter.maxCharacters);
+      setStartsWithValue(data.filter.startsWithLetter);
+      setGenderValue(data.filter.gender);
       setLoading(false);
 
       activeNameContext.setContext({
@@ -171,6 +172,7 @@ export default function NameContextDetailsView() {
         <TextInput
           style={styles.input}
           placeholder='How will you identify this name context?'
+          placeholderTextColor={Colors.core.black}
           maxLength={126}
           autoCapitalize='words'
           value={nameValue}
@@ -182,6 +184,7 @@ export default function NameContextDetailsView() {
         <TextInput
           style={styles.input}
           placeholder="Describe what this name context is about."
+          placeholderTextColor={Colors.core.black}
           maxLength={256}
           multiline
           value={descriptionValue}
@@ -193,6 +196,7 @@ export default function NameContextDetailsView() {
         <TextInput
           style={styles.input}
           placeholder="Describe what this name context is."
+          placeholderTextColor={Colors.core.black}
           maxLength={256}
           value={nounValue}
           onChangeText={setNounValue}
@@ -204,6 +208,7 @@ export default function NameContextDetailsView() {
           style={styles.input}
           keyboardType='numeric'
           placeholder="Set a max number of characters for the name."
+          placeholderTextColor={Colors.core.black}
           value={maxCharacters}
           onChangeText={setMaxCharacters}
         />
@@ -231,6 +236,8 @@ export default function NameContextDetailsView() {
         <TextInput
           style={styles.input}
           value={startsWithValue}
+          placeholder="Set a starting letter for the name."
+          placeholderTextColor={Colors.core.black}
           onChangeText={(value)=> setStartsWithValue(String(value).toUpperCase())}
           maxLength={1}
         />

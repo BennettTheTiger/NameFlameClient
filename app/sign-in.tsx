@@ -45,8 +45,21 @@ export default function SignIn() {
 
     return (
       <View>
-        <TextInput autoComplete="username" placeholder="Username" onChangeText={setUsername} style={styles.inputs} />
-        <TextInput autoComplete="password" placeholder="Password" secureTextEntry onChangeText={setPassword} style={styles.inputs} />
+        <TextInput
+          autoComplete="username"
+          placeholder="Username"
+          placeholderTextColor={Colors.core.black}
+          onChangeText={setUsername}
+          style={styles.inputs}
+        />
+        <TextInput
+          autoComplete="password"
+          placeholder="Password"
+          placeholderTextColor={Colors.core.black}
+          secureTextEntry
+          onChangeText={setPassword}
+          style={styles.inputs}
+        />
         { errorMsg ? <Text style={{ color: Colors.core.orange, textAlign: 'center' }}>{errorMsg}</Text> : null }
         <TouchableOpacity onPress={handleSignIn} disabled={!username || !password} style={styles.buttons}>
           <Text style={styles.buttonText}>Sign In</Text>

@@ -18,12 +18,10 @@ function Favorites() {
     const [loading, setLoading] = useState(false);
 
     function removeLikedName(name: string) {
-        setLoading(true);
         api.patch(`/nameContext/${activeNameContext.id}/removeNames`, {
             names: [name]
         }).then((resp) => activeNameContext.setContext(resp.data))
         .catch((err) => addApiError(err))
-        .finally(() => setLoading(false));
     }
 
     function renderContent() {
