@@ -120,6 +120,7 @@ export default function NameContextDetailsMatchs() {
       <View style={{ flexDirection: 'row', width: '100%', justifyContent: 'center', alignItems: 'center' }}>
         <TextInput
           placeholder='Search for a name'
+          placeholderTextColor={Colors.core.black}
           style={{
             padding: 10,
             borderRadius: 5,
