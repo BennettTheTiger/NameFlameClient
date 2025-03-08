@@ -59,8 +59,9 @@ export default function NameContextDetailsView() {
       setNameValue(data.name);
       setDescriptionValue(data.description);
       setNounValue(data.noun);
-      setMaxCharacters('');
-      setGenderValue(data.gender);
+      setMaxCharacters(data.filter.maxCharacters);
+      setStartsWithValue(data.filter.startsWithLetter);
+      setGenderValue(data.filter.gender);
       setLoading(false);
 
       activeNameContext.setContext({
