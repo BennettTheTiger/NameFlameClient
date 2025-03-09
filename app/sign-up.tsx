@@ -48,7 +48,7 @@ export default function SignUpView() {
 
         return  (
             <View>
-                <TextInput placeholderTextColor={Colors.core.black} placeholder="Username" autoFocus onChangeText={setEmail} style={styles.inputs}/>
+                <TextInput placeholderTextColor={Colors.core.black} placeholder="Username" autoFocus onChangeText={setUsername} style={styles.inputs}/>
                 <TextInput placeholderTextColor={Colors.core.black} placeholder="Email" onChangeText={setEmail} style={styles.inputs}/>
                 <TextInput placeholderTextColor={Colors.core.black} placeholder="Password" secureTextEntry onChangeText={setPassword} style={styles.inputs}/>
                 <TextInput placeholderTextColor={Colors.core.black} placeholder="ConfirmPassword" secureTextEntry onChangeText={setPasswordConfirm} style={styles.inputs}/>
