@@ -9,6 +9,7 @@ import { useActiveNameContext } from '@/contexts/activeNameContext';
 import { useConfirmationContext } from '@/contexts/confirmationCtx';
 import { useErrorContext } from '@/contexts/errorCtx';
 import { MaterialIcons } from '@expo/vector-icons';
+import { ScrollView } from 'react-native-gesture-handler';
 
 export default function NameContextDetailsView() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -27,6 +28,9 @@ export default function NameContextDetailsView() {
   const [genderValue, setGenderValue] = useState('neutral');
   const [startsWithValue, setStartsWithValue] = useState('');
   const [participants, setParticipants] = useState([]);
+  // participants
+  const [participantEmail, setParticipantEmail] = useState('');
+
 
   const isExistingNameContxt = id !== 'new';
 
@@ -133,6 +137,18 @@ export default function NameContextDetailsView() {
       });
   }
 
+  function addParticipant() {
+    if (participantEmail) {
+      api.post(`/nameContext/${id}/participant`, {
+        email: participantEmail
+      }).then((resp) => {
+        setParticipantEmail('');
+      }).catch((err) => {
+        addApiError(err);
+      });
+    }
+  }
+
   if (loading) {
     return <ThemedView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <ActivityIndicator size="large" color={Colors.core.orange} />
@@ -141,6 +157,7 @@ export default function NameContextDetailsView() {
 
   return (
     <ThemedView style={{ flex: 1, alignItems: 'center'}}>
+      <ScrollView style={{ width: '100%' }}>
       <View style={styles.container}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <Text style={{...styles.label, textAlign: 'center' }}>Basic Information</Text>
@@ -243,39 +260,39 @@ export default function NameContextDetailsView() {
         />
         {error.startsWithLetter?.message ? <Text style={styles.errorText}>{error.startsWithLetter?.message}</Text> : null}
       </View>
+      <View style={styles.container}>
+        <Text style={{...styles.label, textAlign: 'center' }}>Participants</Text>
+        <View style={{ flexDirection: 'row' }}>
+          <TextInput
+            style={{...styles.input, flexGrow: 1 }}
+            placeholder="add participan by email"
+            autoComplete='email'
+            keyboardType='email-address'
+            value={participantEmail}
+            onChangeText={setParticipantEmail}
+          />
+          <TouchableOpacity onPress={addParticipant} style={{ padding: 5, backgroundColor: Colors.core.orange, borderRadius: 5, marginLeft: 5 }}>
+            <MaterialIcons name="add" size={24} color={Colors.core.white} />
+          </TouchableOpacity>
+        </View>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
+          {participants.map((participant: any) => (
+            <View key={participant.id} style={{ padding: 5, backgroundColor: Colors.core.orange, borderRadius: 5, margin: 5 }}>
+              <Text style={{ color: Colors.core.white }}>{participant.name}</Text>
+            </View>
+          ))}
+          </View>
+      </View>
+      </ScrollView>
     </ThemedView>
   );
 }
-
-/*     // Participants
-<View style={styles.container}>
-  <Text style={{...styles.label, textAlign: 'center' }}>Participants</Text>
-  <Dropdown
-    style={styles.input}
-    // placeholderStyle={styles.placeholderStyle}
-    // selectedTextStyle={styles.selectedTextStyle}
-    // inputSearchStyle={styles.inputSearchStyle}
-    // iconStyle={styles.iconStyle}
-    data={[]}
-    search
-    maxHeight={300}
-    labelField="label"
-    valueField="value"
-    searchPlaceholder="Search..."
-    value={participants}
-    onChange={item => {
-      setParticipants(item.value);
-    }}
-  />
-</View>
-*/
 
 const styles = StyleSheet.create({
   container: {
     padding: 20,
     marginHorizontal: 10,
     marginVertical: 20,
-    width: '90%',
     color: Colors.core.black,
     borderRadius: 10,
     backgroundColor: Colors.core.tan,
