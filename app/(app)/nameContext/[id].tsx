@@ -1,21 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { Text, View, TextInput, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useState, useCallback } from 'react';
+import { Text, View, TextInput, StyleSheet, ActivityIndicator } from 'react-native';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { ThemedView } from '@/components/ThemedView';
 import { Dropdown } from 'react-native-element-dropdown';
 import { Colors } from '@/constants/Colors';
 import useApi from '@/hooks/useApi';
 import { useActiveNameContext } from '@/contexts/activeNameContext';
-import { useConfirmationContext } from '@/contexts/confirmationCtx';
 import { useErrorContext } from '@/contexts/errorCtx';
-import { MaterialIcons } from '@expo/vector-icons';
 import { ScrollView } from 'react-native-gesture-handler';
+import NameContextMenu from '@/components/NameContextMenu';
+import MatchList from '@/components/MatchList';
 
 export default function NameContextDetailsView() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const activeNameContext = useActiveNameContext();
-  const { requireConfirmation } = useConfirmationContext();
   const { addApiError } = useErrorContext();
   const api = useApi();
   const [loading, setLoading] = useState(true);
@@ -27,12 +26,9 @@ export default function NameContextDetailsView() {
   const [maxCharacters, setMaxCharacters] = useState('');
   const [genderValue, setGenderValue] = useState('neutral');
   const [startsWithValue, setStartsWithValue] = useState('');
-  const [participants, setParticipants] = useState([]);
-  // participants
-  const [participantEmail, setParticipantEmail] = useState('');
-
 
   const isExistingNameContxt = id !== 'new';
+  const isParticipant = isExistingNameContxt && !activeNameContext.isOwner;
 
   function resetForm() {
     setNameValue('');
@@ -41,24 +37,12 @@ export default function NameContextDetailsView() {
     setMaxCharacters('');
     setGenderValue('neutral');
     setStartsWithValue('');
-    setParticipants([]);
   }
-
-  useEffect(() => {
-    if (isExistingNameContxt) {
-      fetchNameContext();
-    }
-    else {
-      resetForm();
-      activeNameContext.resetContext();
-      setLoading(false);
-    }
-  }, [id]);
 
   function fetchNameContext() {
     setLoading(true);
 
-    api.get(`/nameContext/${id}`).then((resp) => {
+    api.get(`/nameContext/${id}`).then(async (resp) => {
       const data = resp.data;
       setNameValue(data.name);
       setDescriptionValue(data.description);
@@ -68,16 +52,22 @@ export default function NameContextDetailsView() {
       setGenderValue(data.filter.gender);
       setLoading(false);
 
-      activeNameContext.setContext({
-        id: data.id,
-        name: data.name,
-        isOwner: data.isOwner,
-        likedNames: data.likedNames || []
-      })
+      activeNameContext.setContext(resp.data);
 
     }).catch((err) => addApiError(err))
     .finally(() => setLoading(false));
   }
+
+  useFocusEffect(
+    useCallback(() => {
+      resetForm();
+      activeNameContext.resetContext();
+      setLoading(false);
+      console.log('useEffect', id, isExistingNameContxt);
+      if (isExistingNameContxt) {
+        fetchNameContext();
+      }
+  }, [id]));
 
   function updateNameContext() {
     setLoading(true);
@@ -89,8 +79,7 @@ export default function NameContextDetailsView() {
         gender: genderValue,
         maxCharacters,
         startsWithLetter: startsWithValue
-      },
-      participants
+      }
     }).then((resp) => {
       activeNameContext.setContext(resp.data);
     }).catch((err) => {
@@ -110,8 +99,7 @@ export default function NameContextDetailsView() {
         gender: genderValue,
         maxCharacters,
         startsWithLetter: startsWithValue
-      },
-      participants
+      }
     }).then(() => {
       router.push('/nameContext');
     }).catch((err) => {
@@ -126,29 +114,6 @@ export default function NameContextDetailsView() {
     });
   }
 
-  function handleDelete() {
-      setLoading(true);
-      api.delete(`/nameContext/${id}`).then(() => {
-        router.push('/nameContext');
-      }).catch((err) => {
-        addApiError(err);
-      }).finally(() => {
-        setLoading(false);
-      });
-  }
-
-  function addParticipant() {
-    if (participantEmail) {
-      api.post(`/nameContext/${id}/participant`, {
-        email: participantEmail
-      }).then((resp) => {
-        setParticipantEmail('');
-      }).catch((err) => {
-        addApiError(err);
-      });
-    }
-  }
-
   if (loading) {
     return <ThemedView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <ActivityIndicator size="large" color={Colors.core.orange} />
@@ -159,35 +124,17 @@ export default function NameContextDetailsView() {
     <ThemedView style={{ flex: 1, alignItems: 'center'}}>
       <ScrollView style={{ width: '100%' }}>
       <View style={styles.container}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <Text style={{...styles.label, textAlign: 'center' }}>Basic Information</Text>
-          {isExistingNameContxt &&
-            <TouchableOpacity onPress={() => {
-              requireConfirmation({
-                primaryActionTitle: 'Delete Name Context',
-                primaryAction: handleDelete,
-                message: 'Are you sure you want to delete this name context?'
-              });
-            }} style={{ padding: 5, backgroundColor: Colors.core.purple, borderRadius: 5 }}>
-              <MaterialIcons name='delete' size={24} color={Colors.core.white} />
-            </TouchableOpacity>}
-            <TouchableOpacity onPress={ isExistingNameContxt ? updateNameContext : saveNameContext} style={{ padding: 5, backgroundColor: Colors.core.orange, borderRadius: 5 }}>
-              <MaterialIcons name='save' size={24} color={Colors.core.white} />
-            </TouchableOpacity>
-          {isExistingNameContxt &&
-            <TouchableOpacity onPress={() => router.push(`/nameContext/${id}/favorites`)} style={{ padding: 5, backgroundColor: Colors.core.orange, borderRadius: 5 }}>
-              <MaterialIcons name='star' size={24} color={Colors.core.white} />
-            </TouchableOpacity>
-          }
-          {isExistingNameContxt &&
-            <TouchableOpacity onPress={() => router.push(`/nameContext/${id}/match`)} style={{ padding: 5, backgroundColor: Colors.core.orange, borderRadius: 5 }}>
-              <MaterialIcons name='local-fire-department' size={24} color={Colors.core.white} />
-            </TouchableOpacity>
-          }
-        </View>
+        <Text style={{...styles.label, textAlign: 'center' }}>Basic Information</Text>
+        <NameContextMenu
+          saveNameContext={saveNameContext}
+          updateNameContext={updateNameContext}
+          setLoading={setLoading}
+          isExistingNameContxt={isExistingNameContxt}
+        />
         <Text style={styles.label}>Name</Text>
         <TextInput
           style={styles.input}
+          readOnly={isParticipant}
           placeholder='How will you identify this name context?'
           placeholderTextColor={Colors.core.black}
           maxLength={126}
@@ -200,6 +147,7 @@ export default function NameContextDetailsView() {
         <Text style={styles.label}>Description</Text>
         <TextInput
           style={styles.input}
+          readOnly={isParticipant}
           placeholder="Describe what this name context is about."
           placeholderTextColor={Colors.core.black}
           maxLength={256}
@@ -212,6 +160,7 @@ export default function NameContextDetailsView() {
         <Text style={styles.label}>Noun</Text>
         <TextInput
           style={styles.input}
+          readOnly={isParticipant}
           placeholder="Describe what this name context is."
           placeholderTextColor={Colors.core.black}
           maxLength={256}
@@ -224,6 +173,7 @@ export default function NameContextDetailsView() {
         <TextInput
           style={styles.input}
           keyboardType='numeric'
+          readOnly={isParticipant}
           placeholder="Set a max number of characters for the name."
           placeholderTextColor={Colors.core.black}
           value={maxCharacters}
@@ -252,6 +202,7 @@ export default function NameContextDetailsView() {
         <Text style={styles.label}>Starts with the letter</Text>
         <TextInput
           style={styles.input}
+          readOnly={isParticipant}
           value={startsWithValue}
           placeholder="Set a starting letter for the name."
           placeholderTextColor={Colors.core.black}
@@ -261,27 +212,8 @@ export default function NameContextDetailsView() {
         {error.startsWithLetter?.message ? <Text style={styles.errorText}>{error.startsWithLetter?.message}</Text> : null}
       </View>
       <View style={styles.container}>
-        <Text style={{...styles.label, textAlign: 'center' }}>Participants</Text>
-        <View style={{ flexDirection: 'row' }}>
-          <TextInput
-            style={{...styles.input, flexGrow: 1 }}
-            placeholder="add participan by email"
-            autoComplete='email'
-            keyboardType='email-address'
-            value={participantEmail}
-            onChangeText={setParticipantEmail}
-          />
-          <TouchableOpacity onPress={addParticipant} style={{ padding: 5, backgroundColor: Colors.core.orange, borderRadius: 5, marginLeft: 5 }}>
-            <MaterialIcons name="add" size={24} color={Colors.core.white} />
-          </TouchableOpacity>
-        </View>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
-          {participants.map((participant: any) => (
-            <View key={participant.id} style={{ padding: 5, backgroundColor: Colors.core.orange, borderRadius: 5, margin: 5 }}>
-              <Text style={{ color: Colors.core.white }}>{participant.name}</Text>
-            </View>
-          ))}
-          </View>
+        <Text style={{...styles.label, textAlign: 'center', marginBottom: 10, marginTop: 0 }}>Matches</Text>
+        <MatchList />
       </View>
       </ScrollView>
     </ThemedView>

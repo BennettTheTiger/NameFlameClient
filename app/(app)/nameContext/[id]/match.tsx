@@ -11,7 +11,6 @@ import { NamePopularityGraph } from '@/components/NamePopularityGraph';
 import { useErrorContext } from '@/contexts/errorCtx';
 import { useActiveNameContext } from '@/contexts/activeNameContext';
 
-
 type NameItem = {
   name: string;
   about: string;
@@ -34,7 +33,6 @@ export default function NameContextDetailsMatchs() {
   const { setContext } = useActiveNameContext();
 
   const [searchValue, setSearchValue] = useState('');
-  const [nameDescription, setNameDescription] = useState('Description Unavailable');
   const [names, setNames] = useState<NameItem[]>([]);
   const [currentName, setCurrentName] = useState<NameItem>({
     name: '',
