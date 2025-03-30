@@ -10,12 +10,14 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/authCtx';
 import { useActiveNameContext } from '../../contexts/activeNameContext';
 import { ThemedView } from '@/components/ThemedView';
+import { useInviteContext } from '@/contexts/inviteContext';
 
 export default function AppLayout() {
   const { user, isLoading } = useAuth();
 
   const router = useRouter();
   const activeNameContext = useActiveNameContext();
+  const inviteContext = useInviteContext();
 
   // You can keep the splash screen open, or render a loading screen like we do here.
   if (isLoading) {
@@ -91,6 +93,26 @@ export default function AppLayout() {
           }}
         />
         <Drawer.Screen
+          name="nameContext/[id]/participants" // This is the name of the page and must match the url from root
+          options={{
+            headerTitle: `${activeNameContext.name} Participants`,
+            headerStyle: {
+              backgroundColor: Colors.core.tan, // Set header background color
+            },
+            drawerItemStyle: { display: 'none' },
+            headerRight: () => (
+              <MaterialIcons
+                name="close"
+                size={24}
+                aria-label='Add Name Context'
+                color={Colors.core.orange}
+                onPress={() => router.replace(`/nameContext/${activeNameContext.id}`)}
+                style={{ marginRight: 10 }}
+              />
+            ), // Hide from drawer navigation
+          }}
+        />
+        <Drawer.Screen
           name="nameContext/index" // This is the name of the page and must match the url from root
           options={{
             drawerLabel: 'Name Contexts',
@@ -124,7 +146,11 @@ export default function AppLayout() {
                 size={24}
                 aria-label='Back'
                 color={Colors.core.orange}
-                onPress={router.back}
+                onPress={() => {
+                  router.back();
+                  activeNameContext.resetContext();
+                  inviteContext.resetInviteContext();
+                }}
                 style={{ marginRight: 10 }}
               />
             ),

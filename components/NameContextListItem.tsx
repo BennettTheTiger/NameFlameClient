@@ -22,10 +22,10 @@ export function NameContextListItem({ id, name, matches, participants, updatedAt
         </View>
         <View style={{ flexDirection: 'row' }}>
             <Text style={styles.itemTitle}>Matches:</Text>
-            <Text style={styles.itemValue}>{matches.length}</Text>
+            <Text style={styles.itemValue}>{matches.length || 0}</Text>
         </View>
         <View style={{ flexDirection: 'row' }}>
-            <Text style={styles.itemTitle}>Participants:</Text>
+            <Text style={styles.itemTitle}>Additional Participants:</Text>
             <Text style={styles.itemValue}>{participants.length}</Text>
         </View>
         <View style={{ flexDirection: 'row' }}>

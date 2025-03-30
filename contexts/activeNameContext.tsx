@@ -1,10 +1,18 @@
 import { useContext, createContext, useState, type PropsWithChildren } from 'react';
 
+type Participant = {
+  email: string;
+  name: string; // may be empty if not set
+  id: string;
+}
+
 type ActiveNameContextType = {
   id: string;
   name: string;
   isOwner: boolean;
   likedNames: string[];
+  participants: Participant[];
+  matches: string[];
   setContext: (context: Partial<ActiveNameContextType>) => void;
   resetContext: () => void;
 };
@@ -14,6 +22,8 @@ const ActiveNameContext = createContext<ActiveNameContextType>({
   name: '',
   isOwner: false,
   likedNames: [],
+  matches: [],
+  participants: [],
   setContext: () => {},
   resetContext: () => {},
 });
@@ -23,6 +33,8 @@ export const ActiveNameProvider = ({ children }: PropsWithChildren<{}>) => {
     id: '',
     name: '',
     likedNames: [],
+    participants: [],
+    matches: [],
     isOwner: false,
     setContext: () => {},
     resetContext: () => {},
@@ -40,6 +52,8 @@ export const ActiveNameProvider = ({ children }: PropsWithChildren<{}>) => {
       id: '',
       name: '',
       likedNames: [],
+      participants: [],
+      matches: [],
       isOwner: false,
       setContext: prevContext.setContext,
       resetContext: prevContext.resetContext,
@@ -54,4 +68,3 @@ export const ActiveNameProvider = ({ children }: PropsWithChildren<{}>) => {
 };
 
 export const useActiveNameContext = () => useContext(ActiveNameContext);
-
