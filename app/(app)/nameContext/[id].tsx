@@ -10,11 +10,13 @@ import { useErrorContext } from '@/contexts/errorCtx';
 import { ScrollView } from 'react-native-gesture-handler';
 import NameContextMenu from '@/components/NameContextMenu';
 import MatchList from '@/components/MatchList';
+import { useSystemUserContext } from '@/contexts/systemUserContext';
 
 export default function NameContextDetailsView() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const activeNameContext = useActiveNameContext();
+  const { systemUser } = useSystemUserContext();
   const { addApiError } = useErrorContext();
   const api = useApi();
   const [loading, setLoading] = useState(true);
@@ -27,8 +29,9 @@ export default function NameContextDetailsView() {
   const [genderValue, setGenderValue] = useState('neutral');
   const [startsWithValue, setStartsWithValue] = useState('');
 
+  const isOwner = activeNameContext.owner === systemUser?.id;
   const isExistingNameContxt = id !== 'new';
-  const isParticipant = isExistingNameContxt && !activeNameContext.isOwner;
+  const isParticipant = isExistingNameContxt && !isOwner;
 
   function resetForm() {
     setNameValue('');
@@ -130,6 +133,7 @@ export default function NameContextDetailsView() {
           updateNameContext={updateNameContext}
           setLoading={setLoading}
           isExistingNameContxt={isExistingNameContxt}
+          isOwner={isOwner}
         />
         <Text style={styles.label}>Name</Text>
         <TextInput

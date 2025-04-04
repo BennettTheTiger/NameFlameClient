@@ -17,7 +17,7 @@ export type NameContext = {
     description: string,
     createdAt: ISODateString,
     updatedAt: ISODateString,
-    isOwner: boolean,
+    owner: string,
     noun: string,
     matches: NameContextMatch[],
     participants: NameContextUser[]

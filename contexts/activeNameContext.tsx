@@ -9,7 +9,7 @@ type Participant = {
 type ActiveNameContextType = {
   id: string;
   name: string;
-  isOwner: boolean;
+  owner: string;
   likedNames: string[];
   participants: Participant[];
   matches: string[];
@@ -20,7 +20,7 @@ type ActiveNameContextType = {
 const ActiveNameContext = createContext<ActiveNameContextType>({
   id: '',
   name: '',
-  isOwner: false,
+  owner: '',
   likedNames: [],
   matches: [],
   participants: [],
@@ -35,7 +35,7 @@ export const ActiveNameProvider = ({ children }: PropsWithChildren<{}>) => {
     likedNames: [],
     participants: [],
     matches: [],
-    isOwner: false,
+    owner: '',
     setContext: () => {},
     resetContext: () => {},
   });
@@ -54,7 +54,7 @@ export const ActiveNameProvider = ({ children }: PropsWithChildren<{}>) => {
       likedNames: [],
       participants: [],
       matches: [],
-      isOwner: false,
+      owner: '',
       setContext: prevContext.setContext,
       resetContext: prevContext.resetContext,
     }));
