@@ -7,15 +7,19 @@ import { useErrorContext } from '@/contexts/errorCtx';
 import { useActiveNameContext } from '@/contexts/activeNameContext';
 import { useInviteContext } from '@/contexts/inviteContext';
 
-function AddParticipantBar() {
+type AddParticipantBarProps = {
+    isOwner: boolean;
+}
+
+function AddParticipantBar(props: AddParticipantBarProps) {
     const api = useApi();
     const { addApiError } = useErrorContext();
-    const { id, isOwner, setContext } = useActiveNameContext();
+    const { id, setContext } = useActiveNameContext();
     const [participantEmail, setParticipantEmail] = useState('');
     const { setInviteContext, resetInviteContext } = useInviteContext();
 
     // Prevent adding participants if not the owner or if the context is new
-    if (id === 'add' || !isOwner) {
+    if (id === 'add' || !props.isOwner) {
       return null;
     }
 

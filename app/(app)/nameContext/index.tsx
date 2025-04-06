@@ -1,17 +1,19 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ScrollView, RefreshControl, ActivityIndicator } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { NameContextListItem } from '@/components/NameContextListItem';
 import { Colors } from '@/constants/Colors';
 import { useFocusEffect } from '@react-navigation/native';
-
 import { NameContext } from '@/types/NameContext';
 
 import useApi from '@/hooks/useApi';
+import { useSocket } from '@/contexts/socketContext';
+import showNotification from '@/notifications/showNotification';
 
 export default function NameContextListView() {
   const api = useApi();
+  const { socket } = useSocket();
 
   const [refreshing, setRefreshing] = React.useState(false);
 
@@ -26,6 +28,37 @@ export default function NameContextListView() {
       setRefreshing(false);
     })
   };
+
+  useEffect(() => {
+    if (socket) {
+      nameContexts.forEach(nameContext => {
+        socket.emit('joinNameContext', nameContext.id);
+      });
+
+      socket.on('nameContextUpdated', (nameContext: NameContext) => {
+        setNameContexts((prevNameContexts) =>
+          prevNameContexts.map((context) =>
+            context.id === nameContext.id ? { ...context, ...nameContext } : context
+          )
+        );
+      })
+
+      socket.on('newMatch', (nameContext: NameContext) => {
+        console.log('newMatch', nameContext);
+              // Show a notification
+        showNotification(
+          `New Matches for ${nameContext.name}`,
+          `The name context "${nameContext.name}" has new matches.`,
+          { nameContextId: nameContext.id }
+        );
+      });
+
+    return () => {
+      console.log('Cleaning up socket listeners');
+      socket.off('nameContextUpdated');
+      socket.off('newMatches');
+    }
+  }}, [nameContexts, socket]);
 
   useFocusEffect(
     React.useCallback(() => {

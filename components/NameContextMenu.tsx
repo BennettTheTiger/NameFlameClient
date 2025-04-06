@@ -12,6 +12,7 @@ type NameContextMenuProps = {
   updateNameContext: () => void;
   setLoading: (loading: boolean) => void;
   isExistingNameContxt: boolean;
+  isOwner: boolean;
 }
 
 const iconSize = 24;
@@ -34,11 +35,11 @@ function NameContextMenu(nameContextMenuProps: NameContextMenuProps) {
         });
     }
 
-    const { id, isOwner } = useActiveNameContext();
+    const { id } = useActiveNameContext();
     const nameOptions = [];
     const isNewNameContext = id === '';
 
-    if (isOwner) {
+    if (nameContextMenuProps.isOwner) {
         nameOptions.push(
           <TouchableOpacity
             style={{...styles.navBtn, backgroundColor: Colors.core.purple}}
@@ -60,7 +61,7 @@ function NameContextMenu(nameContextMenuProps: NameContextMenuProps) {
         );
     }
 
-    if (isOwner || isNewNameContext) {
+    if (nameContextMenuProps.isOwner || isNewNameContext) {
         nameOptions.push(
             <TouchableOpacity onPress={isNewNameContext ? nameContextMenuProps.saveNameContext : nameContextMenuProps.updateNameContext} style={styles.navBtn}>
                 <MaterialIcons name='save' size={iconSize} color={iconColor} />
