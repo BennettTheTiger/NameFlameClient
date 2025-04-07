@@ -8,7 +8,6 @@ import { useActiveNameContext } from '@/contexts/activeNameContext';
 import { useInviteContext } from '@/contexts/inviteContext';
 import { useSystemUserContext } from '@/contexts/systemUserContext';
 
-
 function AddParticipantBar() {
     const api = useApi();
     const { addApiError } = useErrorContext();
