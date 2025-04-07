@@ -6,20 +6,19 @@ import useApi from '@/hooks/useApi';
 import { useErrorContext } from '@/contexts/errorCtx';
 import { useActiveNameContext } from '@/contexts/activeNameContext';
 import { useInviteContext } from '@/contexts/inviteContext';
+import { useSystemUserContext } from '@/contexts/systemUserContext';
 
-type AddParticipantBarProps = {
-    isOwner: boolean;
-}
 
-function AddParticipantBar(props: AddParticipantBarProps) {
+function AddParticipantBar() {
     const api = useApi();
     const { addApiError } = useErrorContext();
-    const { id, setContext } = useActiveNameContext();
+    const { id, setContext, owner } = useActiveNameContext();
+    const { systemUser } = useSystemUserContext();
     const [participantEmail, setParticipantEmail] = useState('');
     const { setInviteContext, resetInviteContext } = useInviteContext();
 
     // Prevent adding participants if not the owner or if the context is new
-    if (id === 'add' || !props.isOwner) {
+    if (id === 'add' || owner !== systemUser?.id) {
       return null;
     }
 
