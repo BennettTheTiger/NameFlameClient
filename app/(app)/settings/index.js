@@ -6,15 +6,45 @@ import { ThemedText } from '../../../components/ThemedText';
 
 import { useAuth } from '../../../contexts/authCtx';
 import { useConfirmationContext } from '../../../contexts/confirmationCtx';
+import { useSystemUserContext } from '../../../contexts/systemUserContext';
+import { useErrorContext } from '../../../contexts/errorCtx';
 import useApi from '../../../hooks/useApi';
+import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
 
 export default function SettingsView() {
   const { signOutUser } = useAuth();
   const api = useApi();
   const [loading, setLoading] = useState(false);
 
-  const [sendNotifications, setSendNotifications] = useState(true);
   const { requireConfirmation, resolveModal } = useConfirmationContext();
+  const { systemUser, updateSystemUser } = useSystemUserContext();
+  const { addApiError } = useErrorContext();
+
+  async function handlePasswordReset() {
+    const auth = getAuth();
+    try {
+      await sendPasswordResetEmail(auth, systemUser.email);
+      requireConfirmation({
+        message: 'Password reset email sent. Please check your inbox.',
+        primaryActionTitle: 'OK',
+        primaryAction: resolveModal
+      })
+    } catch (error) {
+      addApiError(error);
+    }
+  }
+
+  async function toggleNotifications(value) {
+    setLoading(true);
+    try {
+      await api.patch('auth/systemUser', { allowNotifications: value }).then((resp) => {
+      updateSystemUser(resp.data);
+      });
+    } catch (error) {
+      addApiError(error);
+    }
+    setLoading(false);
+  }
 
   function handleAccoundDeletion() {
     requireConfirmation({
@@ -63,13 +93,20 @@ export default function SettingsView() {
         <View style={{ paddingTop: 10, flexDirection: 'row', alignItems: 'flex-end', alignContent: 'center' }}>
           <Switch
             ios_backgroundColor={Colors.core.white}
-            value={sendNotifications}
-            onValueChange={setSendNotifications}
+            value={systemUser.allowNotifications}
+            onValueChange={toggleNotifications}
             trackColor={{ false: Colors.core.purple, true: Colors.core.orange }}
           />
           <ThemedText style={{ paddingLeft: 10 }}lightColor={Colors.core.black} darkColor={Colors.core.black} type='default'>
             Send Notifications
           </ThemedText>
+        </View>
+        <View style={{ paddingTop: 10 }}>
+          <Pressable onPress={handlePasswordReset}>
+            <ThemedText lightColor={Colors.core.black} darkColor={Colors.core.black} type='default'>
+              Reset Password
+            </ThemedText>
+          </Pressable>
         </View>
         <View style={{ paddingTop: 10 }}>
           <Pressable onPress={handleAccoundDeletion}>

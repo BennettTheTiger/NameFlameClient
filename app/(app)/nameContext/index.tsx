@@ -10,10 +10,12 @@ import { NameContext } from '@/types/NameContext';
 import useApi from '@/hooks/useApi';
 import { useSocket } from '@/contexts/socketContext';
 import showNotification from '@/notifications/showNotification';
+import { useSystemUserContext } from '@/contexts/systemUserContext';
 
 export default function NameContextListView() {
   const api = useApi();
   const { socket } = useSocket();
+  const { systemUser } = useSystemUserContext();
 
   const [refreshing, setRefreshing] = React.useState(false);
 
@@ -30,7 +32,7 @@ export default function NameContextListView() {
   };
 
   useEffect(() => {
-    if (socket) {
+    if (socket && systemUser?.allowNotifications) {
       nameContexts.forEach(nameContext => {
         socket.emit('joinNameContext', nameContext.id);
       });
@@ -58,7 +60,7 @@ export default function NameContextListView() {
       socket.off('nameContextUpdated');
       socket.off('newMatches');
     }
-  }}, [nameContexts, socket]);
+  }}, [nameContexts, socket, systemUser]);
 
   useFocusEffect(
     React.useCallback(() => {

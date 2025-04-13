@@ -11,15 +11,18 @@ export type SystemUser = {
 
 type SystemUserContextType = {
   systemUser: SystemUser | null;
+  updateSystemUser: (updatedUser: Partial<SystemUser>) => void;
 };
 
 const SystemUserContext = createContext<SystemUserContextType>({
-    systemUser: null
+    systemUser: null,
+    updateSystemUser: () => {},
 });
 
 export const SystemUserContextProvider = ({ children }: PropsWithChildren<{}>) => {
   const [context, setContextState] = useState<SystemUserContextType>({
     systemUser: null,
+    updateSystemUser: () => {},
   });
 
   const api = useApi();
@@ -35,23 +38,38 @@ export const SystemUserContextProvider = ({ children }: PropsWithChildren<{}>) =
                 email: data.email || '',
                 allowNotifications: data.allowNotifications || false,
             };
-            setContextState(() => ({ systemUser: userData}));
+            setContextState((prevState) => ({
+              ...prevState,
+              systemUser: userData
+            }));
         }).catch((err) => {
             console.error('Error fetching system user:', err);
-            setContextState(() => ({
+            setContextState((prevState) => ({
+                ...prevState,
                 systemUser: null,
             }));
         });
       }
       else {
-        setContextState(() => ({
+        setContextState((prevState) => ({
+          ...prevState,
           systemUser: null,
         }));
       }
     }, [user]);
 
+    // Method to update the systemUser
+    const updateSystemUser = (updatedUser: Partial<SystemUser>) => {
+      setContextState((prevState) => ({
+        ...prevState,
+        systemUser: prevState.systemUser
+          ? { ...prevState.systemUser, ...updatedUser }
+          : null,
+      }));
+    };
+
   return (
-    <SystemUserContext.Provider value={context}>
+    <SystemUserContext.Provider value={{ ...context, updateSystemUser }}>
       {children}
     </SystemUserContext.Provider>
   );
