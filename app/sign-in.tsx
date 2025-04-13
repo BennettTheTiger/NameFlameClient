@@ -7,6 +7,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { useAuth } from '../contexts/authCtx';
 import { Colors } from "@/constants/Colors";
 import { MaterialIcons } from "@expo/vector-icons";
+import { getAuth, sendPasswordResetEmail } from "firebase/auth";
 
 export default function SignIn() {
   const { signIn, user } = useAuth();
@@ -17,15 +18,32 @@ export default function SignIn() {
   }
 
   const [isLoading, setIsLoading] = useState(false);
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+
+  async function handleResetPassword() {
+    setIsLoading(true);
+    setErrorMsg('');
+    if (!email) {
+      setErrorMsg('Please enter your email address');
+      setIsLoading(false);
+      return;
+    }
+    try {
+      const auth = getAuth();
+      await sendPasswordResetEmail(auth, email);
+    } catch (e) {
+      setErrorMsg('Invalid Credentials, please try again');
+    }
+    setIsLoading(false);
+  }
 
   async function handleSignIn() {
     setIsLoading(true);
     setErrorMsg('');
     try {
-      await signIn(username, password);
+      await signIn(email, password);
     } catch (e) {
       setErrorMsg('Invalid Credentials, please try again');
     }
@@ -46,10 +64,10 @@ export default function SignIn() {
     return (
       <View>
         <TextInput
-          autoComplete="username"
-          placeholder="Username"
+          autoComplete="email"
+          placeholder="Email"
           placeholderTextColor={Colors.core.black}
-          onChangeText={setUsername}
+          onChangeText={setEmail}
           style={styles.inputs}
         />
         <TextInput
@@ -61,15 +79,14 @@ export default function SignIn() {
           style={styles.inputs}
         />
         { errorMsg ? <Text style={{ color: Colors.core.orange, textAlign: 'center' }}>{errorMsg}</Text> : null }
-        <TouchableOpacity onPress={handleSignIn} disabled={!username || !password} style={styles.buttons}>
+        <TouchableOpacity onPress={handleSignIn} disabled={!email || !password} style={styles.buttons}>
           <Text style={styles.buttonText}>Sign In</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => {
-            // Navigate after signing in. You may want to tweak this to ensure sign-in is
-            // successful before navigating.
-            router.replace('./sign-up');
-          }} style={styles.buttons}>
+        <TouchableOpacity onPress={() => { router.replace('./sign-up') }} style={styles.buttons}>
           <Text style={styles.buttonText}>Sign Up</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleResetPassword} style={styles.passwordReset}>
+          <Text style={{ ...styles.buttonText, color: Colors.core.black }}>Forgot Password</Text>
         </TouchableOpacity>
       </View>
     )
@@ -80,7 +97,7 @@ export default function SignIn() {
       <View style={styles.container}>
         <View style={{ alignItems: 'center' }}>
           <MaterialIcons name="local-fire-department" size={100} color={Colors.core.orange} />
-          <ThemedText type="title" style={styles.header} >Sign In</ThemedText>
+          <ThemedText type="title" style={styles.header}>Sign In</ThemedText>
         </View>
         {renderContents()}
       </View>
@@ -124,4 +141,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Bricolage-Grotesque',
   },
+  passwordReset: {
+    backgroundColor: Colors.core.tan,
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10,
+    alignItems: 'center',
+  }
 });
