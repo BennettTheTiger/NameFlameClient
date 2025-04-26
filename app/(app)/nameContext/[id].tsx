@@ -66,7 +66,6 @@ export default function NameContextDetailsView() {
       resetForm();
       activeNameContext.resetContext();
       setLoading(false);
-      console.log('useEffect', id, isExistingNameContxt);
       if (isExistingNameContxt) {
         fetchNameContext();
       }

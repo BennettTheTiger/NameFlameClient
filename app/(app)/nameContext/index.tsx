@@ -47,7 +47,6 @@ export default function NameContextListView() {
 
       if (systemUser?.allowNotifications) {
         socket.on('newMatch', (nameContext: NameContext) => {
-          console.log('newMatch', systemUser);
 
           showNotification(
             `New Matches for ${nameContext.name}`,
@@ -58,7 +57,6 @@ export default function NameContextListView() {
       }
 
     return () => {
-      console.log('Cleaning up socket listeners');
       socket.off('nameContextUpdated');
       socket.off('newMatch');
     }
