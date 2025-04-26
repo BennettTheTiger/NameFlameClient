@@ -32,7 +32,7 @@ export default function NameContextListView() {
   };
 
   useEffect(() => {
-    if (socket && systemUser?.allowNotifications) {
+    if (socket) {
       nameContexts.forEach(nameContext => {
         socket.emit('joinNameContext', nameContext.id);
       });
@@ -45,20 +45,20 @@ export default function NameContextListView() {
         );
       })
 
-      socket.on('newMatch', (nameContext: NameContext) => {
-        console.log('newMatch', nameContext);
-              // Show a notification
-        showNotification(
-          `New Matches for ${nameContext.name}`,
-          `The name context "${nameContext.name}" has new matches.`,
-          { nameContextId: nameContext.id }
-        );
-      });
+      if (systemUser?.allowNotifications) {
+        socket.on('newMatch', (nameContext: NameContext) => {
+
+          showNotification(
+            `New Matches for ${nameContext.name}`,
+            `The name context "${nameContext.name}" has new matches.`,
+            { nameContextId: nameContext.id }
+          );
+        });
+      }
 
     return () => {
-      console.log('Cleaning up socket listeners');
       socket.off('nameContextUpdated');
-      socket.off('newMatches');
+      socket.off('newMatch');
     }
   }}, [nameContexts, socket, systemUser]);
 
